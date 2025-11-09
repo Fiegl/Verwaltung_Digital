@@ -1,0 +1,13 @@
+[
+  {
+    "buerger_id": "11111111-2222-3333-4444-555555555555",
+    "public_key": "-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----\n",
+    "vorname": "stefan",
+    "nachname_geburt": "fiegl",
+    "geburtsdatum": "1988-11-19",
+    "sterbedatum": null,
+    "familienstand": "ledig",
+    "haft_status": null,
+    "steuer_id": null
+  }
+]
