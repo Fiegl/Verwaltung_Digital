@@ -1,0 +1,80 @@
+<html lang="de">
+    <head>
+        <meta charset="UTF-8">
+        <title>Bürgerservices</title>
+        <style>
+            #wohnsitz-section, #name-section {
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Bürgerservices</h1>
+
+        <form>
+            <label for="Formulare_Meldeamt">Formulare Meldeamt</label>
+            <select id="Formulare_Meldeamt" name="Formulare_Meldeamt">
+                <option value="">Formular auswählen</option>
+                <option value="wohnsitz">Wohnsitz anmelden</option>
+                <option value="namensaenderung">Namensänderung nach Heirat</option>
+            </select>
+
+            <fieldset id="wohnsitz-section">
+                <legend>Wohnsitz anmelden</legend>
+
+                <label for="vorname">Vorname:</label>
+                <input type="text" id="vorname" name="vorname" required><br>
+
+                <label for="nachname">Nachname:</label>
+                <input type="text" id="nachname" name="nachname" required><br>
+
+                <label for="geburtsdatum">Geburtsdatum:</label>
+                <input type="date" id="geburtsdatum" name="geburtsdatum" required><br>
+
+                <label for="strasse">Straße:</label>
+                <input type="text" id="strasse" name="strasse" required><br>
+
+                <label for="hausnr">Hausnummer:</label>
+                <input type="text" id="hausnr" name="hausnr" required>
+            </fieldset>
+            <fieldset id="name-section">
+                <legend>Namensänderung nach Heirat</legend>
+
+                <label for="eheschliessungsdatum">Eheschließungsdatum:</label>
+                <input type="date" id="eheschliessungsdatum" name="eheschliessungsdatum"><br>
+
+                <label for="alterNachname">Alter Nachname</label>
+                <input type="text" id="alterNachname" name="alterNachname"><br>
+
+                <label for="neuerNachname">Neuer Nachname:</label>
+                <input type="text" id="neuerNachname" name="neuerNachname"><br>
+
+                <label for="heiratsurkunde">Heiratsurkunde (Upload):</label>
+                <input type="file" id="heiratsurkunde" name="heiratsurkunde" accept=".pdf,.jpg,.png">
+            </fieldset>
+        </form>
+
+        <script>
+            // Wir holen uns das Auswahlfeld und beide Abschnitte
+            const vorgangSelect = document.getElementById("Formulare_Meldeamt");
+            const wohnsitzSection = document.getElementById("wohnsitz-section");
+            const nameSection = document.getElementById("name-section");
+
+            // Wenn sich die Auswahl ändert, wird diese Funktion ausgeführt
+            vorgangSelect.addEventListener("change", function() {
+                const auswahl = vorgangSelect.value;
+
+                // Alles zuerst ausblenden
+                wohnsitzSection.style.display = "none";
+                nameSection.style.display = "none";
+
+                // Je nach Auswahl das richtige anzeigen
+                if (auswahl === "wohnsitz") {
+                    wohnsitzSection.style.display = "block";
+                } else if (auswahl === "namensaenderung") {
+                nameSection.style.display = "block";
+                }
+            });
+        </script>
+    </body>
+</html>
