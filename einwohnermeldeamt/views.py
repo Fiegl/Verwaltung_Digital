@@ -28,3 +28,10 @@ def lade_personenstandsregister():
             return data
     except json.JSONDecodeError:
         return []
+    
+
+
+
+
+
+#def erzeuge_buerger_id():
