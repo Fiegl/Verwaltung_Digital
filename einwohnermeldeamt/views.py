@@ -21,11 +21,11 @@ def lade_personenstandsregister():
     if not personenstandsregister.exists():
         return []
     try:
-        with open(personenstandsregister, "r", encoding="utf-8") as file:
-            data = json.load(file)
-            if isinstance(data, dict):
+        with open(personenstandsregister, "r", encoding="utf-8") as datei:
+            daten = json.load(datei)
+            if isinstance(daten, dict):
                 return []
-            return data
+            return daten
     except json.JSONDecodeError:
         return []
     
