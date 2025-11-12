@@ -5,9 +5,9 @@
         "buerger_id": "e11111111-2222-3333-4444-555555555555",
         "straße_hausnummer": "Musterweg_1",
         "plz_ort": "123456_Musterdorf",
-        "land": "Musterland",
+        "land": "DE",
         "anmmeldung_datum": "2025-01-21",
         "abmeldung_datum": "2025-02-21",
-        "wohnsitz_aktuell": "(true/false)"
+        "wohnsitz_aktuell": true
     }
 ]
