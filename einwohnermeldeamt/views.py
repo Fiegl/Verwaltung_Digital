@@ -6,7 +6,7 @@ import datetime as date
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from pathlib import Path                            #funktioniert PLattform-übergreifend
-
+from lxml import tree
 
 
 
