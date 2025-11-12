@@ -34,4 +34,12 @@ def lade_personenstandsregister():
 
 
 
-#def erzeuge_buerger_id():
+
+def erzeuge_public_key():
+    pass
+
+def erzeuge_buerger_id():
+    pass
+
+
+
