@@ -1,6 +1,7 @@
 import uuid
 import json
 import requests
+import time
 import datetime as date
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
