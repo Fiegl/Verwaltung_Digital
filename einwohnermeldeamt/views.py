@@ -39,4 +39,8 @@ def erzeuge_buerger_id():
     pass
 
 
+def personenstandsregister_api(request):                                #muss auf den Produktiv-Server
+    with open("/db/personenstandsregister.json", "r") as datei:
+        daten = json.load(datei)
+    return JsonResponse(daten)
 
