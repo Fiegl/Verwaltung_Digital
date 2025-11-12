@@ -31,10 +31,6 @@ def lade_personenstandsregister():
     
 
 
-
-
-
-
 def erzeuge_public_key():
     pass
 
