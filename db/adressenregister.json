@@ -1,0 +1,18 @@
+{
+    "adressenregister": [
+        {
+            "buerger_id": "11111111-2222-3333-4444-555555555555",
+            "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554a",
+            "straße_hausnummer": "Musterweg_1",
+            "plz_ort": "123456_Musterdorf",
+            "land": "Musterland"
+        },
+        {
+            "buerger_id": "12111111-2222-3333-4444-555555555555",
+            "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554b",
+            "straße_hausnummer": "Musterweg_2",
+            "plz_ort": "123456_Musterdorf",
+            "land": "Musterland"
+        }
+    ]
+}
