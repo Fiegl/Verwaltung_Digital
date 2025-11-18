@@ -61,6 +61,8 @@ def speichere_wohnsitzregister(daten):
 
 
 
+#API zwischen Personenstands-Register und Ressort Gesundheit&Soziales
+
 @csrf_exempt
 def personenstandsregister_api(request):
 
@@ -75,6 +77,8 @@ def personenstandsregister_api(request):
 
         erstelle_neuen_eintrag = {
             "buerger_id": str(uuid.uuid4()),
+            "public_key": None,                     #wird rausgegeben für Fachverfahren bei den anderen Ressorts
+            "private_key": None,                    #niemals nach außen, bleibt im Personenstandsregister!
             "vorname": vorname,                     #schickt uns Gesumdheit&Soziales
             "nachname_geburt": nachname_geburt,     #schickt uns Gesumdheit&Soziales
             "geburtsdatum": geburtsdatum,           #schickt uns Gesumdheit&Soziales
