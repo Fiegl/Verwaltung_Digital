@@ -2,6 +2,7 @@
   {
     "buerger_id": "11111111-2222-3333-4444-555555555555",
     "public_key": "-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----\n",
+    "private key": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n",
     "vorname": "stefan",
     "nachname_geburt": "fiegl",
     "geburtsdatum": "1988-11-19",

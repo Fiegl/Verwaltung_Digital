@@ -1,0 +1,33 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="">
+</head>
+
+<body>
+
+    <form method="post" action="{% url 'personenstandsregister_api' %}">
+        {% csrf_token %}
+        <label>Vorname:
+            <input type="text" name="vorname">
+        </label><br>
+
+        <label>Nachname (Geburt):
+            <input type="text" name="nachname_geburt">
+        </label><br>
+
+        <label>Geburtsdatum:
+            <input type="text" name="geburtsdatum">
+        </label><br>
+
+        <button type="submit">Absenden</button>
+    </form>
+
+
+</body>
+
+</html>
