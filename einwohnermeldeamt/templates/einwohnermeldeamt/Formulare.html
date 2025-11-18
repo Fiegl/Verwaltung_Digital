@@ -3,7 +3,7 @@
         <meta charset="UTF-8">
         <title>Bürgerservices</title>
         <style>
-            #wohnsitz-section, #name-section {
+            #wohnsitz-section {
                 display: none;
             }
         </style>
@@ -16,11 +16,13 @@
             <select id="Formulare_Meldeamt" name="Formulare_Meldeamt">
                 <option value="">Formular auswählen</option>
                 <option value="wohnsitz">Wohnsitz anmelden</option>
-                <option value="namensaenderung">Namensänderung nach Heirat</option>
             </select>
 
             <fieldset id="wohnsitz-section">
                 <legend>Wohnsitz anmelden</legend>
+
+                <label for="wohnsitz_b_id">Bürger-ID:</label>
+                <input type="text" id="vorname" name="vorname" required><br>
 
                 <label for="vorname">Vorname:</label>
                 <input type="text" id="vorname" name="vorname" required><br>
@@ -36,21 +38,8 @@
 
                 <label for="hausnr">Hausnummer:</label>
                 <input type="text" id="hausnr" name="hausnr" required>
-            </fieldset>
-            <fieldset id="name-section">
-                <legend>Namensänderung nach Heirat</legend>
 
-                <label for="eheschliessungsdatum">Eheschließungsdatum:</label>
-                <input type="date" id="eheschliessungsdatum" name="eheschliessungsdatum"><br>
-
-                <label for="alterNachname">Alter Nachname</label>
-                <input type="text" id="alterNachname" name="alterNachname"><br>
-
-                <label for="neuerNachname">Neuer Nachname:</label>
-                <input type="text" id="neuerNachname" name="neuerNachname"><br>
-
-                <label for="heiratsurkunde">Heiratsurkunde (Upload):</label>
-                <input type="file" id="heiratsurkunde" name="heiratsurkunde" accept=".pdf,.jpg,.png">
+                <button type="submit">Eingabe</button>
             </fieldset>
         </form>
 
@@ -58,7 +47,6 @@
             // Wir holen uns das Auswahlfeld und beide Abschnitte
             const vorgangSelect = document.getElementById("Formulare_Meldeamt");
             const wohnsitzSection = document.getElementById("wohnsitz-section");
-            const nameSection = document.getElementById("name-section");
 
             // Wenn sich die Auswahl ändert, wird diese Funktion ausgeführt
             vorgangSelect.addEventListener("change", function() {
@@ -66,15 +54,12 @@
 
                 // Alles zuerst ausblenden
                 wohnsitzSection.style.display = "none";
-                nameSection.style.display = "none";
 
                 // Je nach Auswahl das richtige anzeigen
                 if (auswahl === "wohnsitz") {
                     wohnsitzSection.style.display = "block";
-                } else if (auswahl === "namensaenderung") {
-                nameSection.style.display = "block";
-                }
-            });
+                } 
+            })
         </script>
     </body>
 </html>
