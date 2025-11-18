@@ -12,7 +12,7 @@
     <body>
         <h1>Bürgerservices</h1>
 
-        <form method="POST" action="{% url 'wohnsitz_formular' %}">
+        <form method="POST" action="{% url 'wohnsitz_anmelden' %}">                <!-- Korrelation zur views.py Funktion "Wohnsitz anmelden" -->    
             {% csrf_token %}
             <label for="Formulare_Meldeamt">Formulare Meldeamt</label>
             <select id="Formulare_Meldeamt" name="Formulare_Meldeamt">
@@ -23,17 +23,8 @@
             <fieldset id="wohnsitz-section">
                 <legend>Wohnsitz anmelden</legend>
 
-                <label for="wohnsitz_b_id">Bürger-ID:</label>
-                <input type="text" id="vorname" name="vorname" required><br>
-
-                <label for="vorname">Vorname:</label>
-                <input type="text" id="vorname" name="vorname" required><br>
-
-                <label for="nachname">Nachname:</label>
-                <input type="text" id="nachname" name="nachname" required><br>
-
-                <label for="geburtsdatum">Geburtsdatum:</label>
-                <input type="date" id="geburtsdatum" name="geburtsdatum" required><br>
+                <label for="buerger_id">Bürger-ID:</label>                          <!-- später prüfen durch public key -->    
+                <input type="text" id="buerger_id" name="buerger_id" required><br>
 
                 <label for="adresse_id">Straße und Hausnummer:</label>
                 <select id="adresse_id" name="adresse_id" required>
@@ -55,7 +46,7 @@
             // Wenn sich die Auswahl ändert, wird diese Funktion ausgeführt
             vorgangSelect.addEventListener("change", function() {
                 const auswahl = vorgangSelect.value;
-
+                    
                 // Alles zuerst ausblenden
                 wohnsitzSection.style.display = "none";
 
