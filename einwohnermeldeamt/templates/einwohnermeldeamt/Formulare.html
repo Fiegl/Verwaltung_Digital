@@ -1,3 +1,4 @@
+{% load static %}
 <html lang="de">
     <head>
         <meta charset="UTF-8">
@@ -11,7 +12,8 @@
     <body>
         <h1>Bürgerservices</h1>
 
-        <form>
+        <form method="POST">
+            {% csrf_token %}
             <label for="Formulare_Meldeamt">Formulare Meldeamt</label>
             <select id="Formulare_Meldeamt" name="Formulare_Meldeamt">
                 <option value="">Formular auswählen</option>

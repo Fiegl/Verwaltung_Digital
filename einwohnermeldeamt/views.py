@@ -32,12 +32,14 @@ def lade_personenstandsregister():
     except:
         return []
 
-    
-
 def speichere_personenstandsregister(daten):
     with open (personenstandsregister, "w", encoding="utf-8") as datei:
         json.dump(daten, datei, ensure_ascii=False, indent=2)
         
+
+
+
+
 
 def lade_wohnsitzregister():
     try:
