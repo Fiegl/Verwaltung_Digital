@@ -95,3 +95,42 @@ def personenstandsregister_api(request):
     return HttpResponse("Nur POST erlaubt", status=405)
 
 
+#API zwischen Personenstands-Register und den anderen Ressorts
+
+def abfrage_buerger_id(request):
+    
+    if request.method == "GET":
+
+        vorname = request.GET.get("vorname")
+        nachname_geburt = request.GET.get("nachname_geburt")
+        geburtsdatum = request.GET.get("geburtsdatum")
+
+        if not (vorname and nachname_geburt and geburtsdatum):
+            return JsonResponse(
+                {"detail": "Parameter vorname, nachname_geburt und geburtsdatum sind erforderlich."},
+                status=400
+            )
+
+        daten = lade_personenstandsregister()
+
+        treffer = [
+            eintrag for eintrag in daten
+            if eintrag.get("vorname") == vorname
+            and eintrag.get("nachname_geburt") == nachname_geburt
+            and eintrag.get("geburtsdatum") == geburtsdatum
+        ]
+
+        if not treffer:
+            return JsonResponse({"buerger_ids": [], "anzahl": 0}, status=404)
+
+        ids = [e["buerger_id"] for e in treffer]
+
+        return JsonResponse(
+            {
+                "buerger_ids": ids,
+                "anzahl": len(ids)
+            },
+            status=200
+        )
+        
+    return JsonResponse({"detail": "Nur GET erlaubt."}, status=405)
