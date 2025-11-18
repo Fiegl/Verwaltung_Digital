@@ -12,6 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 # Pfade zu den Registern
 personenstandsregister = "db/personenstandsregister.json"
+wohnsitzregister = "db/wohnsitzregister.json"
 
 
 
@@ -37,6 +38,18 @@ def speichere_personenstandsregister(daten):
     with open (personenstandsregister, "w", encoding="utf-8") as datei:
         json.dump(daten, datei, ensure_ascii=False, indent=2)
         
+
+def lade_wohnsitzregister():
+    try:
+        with open(wohnsitzregister, "r", encoding="utf-8") as datei:
+            return json.load(datei)
+    except:
+        return []   
+    
+    
+def speichere_wohnsitzregister(daten):
+    with open (wohnsitzregister, "w", encoding="utf-8") as datei:
+        json.dump(daten, datei, ensure_ascii=False, indent=2)  
 
     
 
