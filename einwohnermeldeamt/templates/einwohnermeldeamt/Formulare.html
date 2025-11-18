@@ -12,7 +12,7 @@
     <body>
         <h1>Bürgerservices</h1>
 
-        <form method="POST">
+        <form method="POST" action="{% url 'wohnsitz_formular' %}">
             {% csrf_token %}
             <label for="Formulare_Meldeamt">Formulare Meldeamt</label>
             <select id="Formulare_Meldeamt" name="Formulare_Meldeamt">
@@ -35,11 +35,13 @@
                 <label for="geburtsdatum">Geburtsdatum:</label>
                 <input type="date" id="geburtsdatum" name="geburtsdatum" required><br>
 
-                <label for="strasse">Straße:</label>
-                <input type="text" id="strasse" name="strasse" required><br>
-
-                <label for="hausnr">Hausnummer:</label>
-                <input type="text" id="hausnr" name="hausnr" required>
+                <label for="adresse_id">Straße und Hausnummer:</label>
+                <select id="adresse_id" name="adresse_id" required>
+                    <option value="">Adresse auswählen</option>
+                    {% for adr in adressen %}
+                        <option value="{{ adr.id }}">{{ adr.label }}</option>
+                    {% endfor %}
+                </select>
 
                 <button type="submit">Eingabe</button>
             </fieldset>

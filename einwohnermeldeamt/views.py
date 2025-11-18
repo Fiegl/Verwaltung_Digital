@@ -13,7 +13,7 @@ from django.views.decorators.csrf import csrf_exempt
 # Pfade zu den Registern
 personenstandsregister = "db/personenstandsregister.json"
 wohnsitzregister = "db/wohnsitzregister.json"
-
+adressenregister = "db/adressenregister.json"
 
 
 
@@ -23,6 +23,15 @@ def test_api(request):
 
 def test(request):
     return render(request, "einwohnermeldeamt/test.html")
+
+
+def lade_adressenregister():
+    try:
+        with open(adressenregister, "r", encoding="utf-8") as datei:
+            return json.load(datei)
+    except:
+        return {"adressenregister": []}
+
 
 
 def lade_personenstandsregister():
@@ -53,7 +62,52 @@ def speichere_wohnsitzregister(daten):
     with open (wohnsitzregister, "w", encoding="utf-8") as datei:
         json.dump(daten, datei, ensure_ascii=False, indent=2)  
 
-    
+##Funktion zum Speichern Eintrag neuer Wohnsitz in das Wohnsitz-Register
+
+@csrf_exempt
+def wohnsitz_anmelden(request):
+
+    liste_adressen = lade_adressenregister().get("adressenregister", [])  #siehe Hilfs-Funktion Adressen-Register
+
+    adressen = [
+        {
+            "id": a["adresse_id"],
+            "label": f'{a["straße_hausnummer"].replace("_", " ")} , {a["plz_ort"].replace("_", " ")}',
+            "roh": a
+        }
+        for a in liste_adressen
+    ]
+
+    if request.method == "POST":
+        adresse_id = request.POST.get("adresse_id")
+        buerger_id = request.POST.get("buerger_id")
+        vorname = request.POST.get("vorname")
+        nachname = request.POST.get("nachname")
+        geburtsdatum = request.POST.get("geburtsdatum")
+
+        adr_obj = next((a["roh"] for a in adressen if a["id"] == adresse_id), None)
+
+        # Eintrag erzeugen
+        neuer_eintrag = {
+            "meldungsvorgang_id": str(uuid.uuid4()),
+            "adresse_id": adresse_id,
+            "buerger_id": buerger_id,
+            "vorname": vorname,
+            "nachname": nachname,
+            "geburtsdatum": geburtsdatum,
+            "straße_hausnummer": adr_obj["straße_hausnummer"],
+            "plz_ort": adr_obj["plz_ort"],
+            "land": adr_obj["land"],
+        }
+
+        wohnsitz_daten = lade_wohnsitzregister()
+        wohnsitz_daten.append(neuer_eintrag)
+        speichere_wohnsitzregister(wohnsitz_daten)
+
+        return render(request, "einwohnermeldeamt/Formulare.html", {
+            "adressen": adressen,
+            "success": True
+        })   
 
 
 
