@@ -1,0 +1,83 @@
+/* ========== Allgemeine Einstellungen (Basis-Styling) ========== */
+:root {
+  --bg: #f7f8fa;
+  --font: #1c1e21;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --navbar-bg: #e3e6eb;
+  --navbar-font: #1c1e21;
+  --navbar-highlight: #5c9cea;
+  --navbar-string: #f7f7f7;
+  --button-bg: #5c9cea;
+  --button-font: #ffffff;
+  --button-selected: #4b8dd6;
+  --button-disabled-bg: #e3e9f0;
+  --button-disabled-font: #6b7b8c;
+  --card-bg: #ffffff;
+  --card-font: #000000;
+  --dashboard-bg: #e3e6eb;
+  --dashboard-font: #000000;
+  --action-button-bg: #ffc807;
+  --action-button-selected: #e6b200;
+  --action-button-font: #1c1e21;
+  --highlight-accent: #5c9cea;
+  --highlight-success: #4caf50;
+  --highlight-danger: #f44336;
+  --highlight-warning: #ff9800;
+  --highlight-success-selected: #388e3c;
+  --highlight-danger-selected: #d32f2f;
+  --highlight-warning-selected: #f57c00;
+  --table-highlight: #e3e6eb;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg); /* Heller Hintergrund – wirkt modern */
+    color: var(--font); /* Gut lesbarer Text */
+}
+
+/* ========== Überschriften ========== */
+h1, h2, h3 {
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* ========== Buttons ========== */
+button {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    background-color: var(--button-bg);
+    color: var(--button-font);
+    font-size: 1em;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+button:hover {
+    background-color: #357ac9;
+}
+
+/* ========== Formulare ========== */
+form {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: var(--button-selected);
+    border-radius: 10px;
+}
+
+/* Labels & Inputs */
+label {
+    display: block;
+    margin-top: 10px;
+}
+
+input, select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}

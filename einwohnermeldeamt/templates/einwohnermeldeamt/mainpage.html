@@ -1,0 +1,47 @@
+<html lang="de">
+    <head>
+        <meta charset="UTF-8">
+        <title>Bürgerportal-Haupseite</title>
+        <link rel="stylesheet" href="styletest.css">
+        <style>
+            .amt-raster {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 20px;
+                margin: 40px;
+            }
+
+            .amt-kachel {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 30px;
+                background-color: #f3f3f3;
+                border-radius: 10px;
+                text-decoration: none;
+                font-size: 1.2rem;
+                color: #333;
+                border: 2px solid #ccc;
+                transition: 0.2s;
+            }
+
+            .amt-kachel:hover {
+                background-color: #e0e0e0;
+                border-color: #999;
+                transform: translateY(-3px);
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Bürgerportal Musterland</h1>
+        <h2>Bitte wählen Sie das zuständige Amt.</h2>
+        
+        <div class="amt-raster">
+            <a href="https://server1.example" class="amt-kachel">Amt für Meldewesen</a>
+            <a href="https://server2.example" class="amt-kachel">Amt für Gesundheit und Soziales</a>
+            <a href="https://server3.example" class="amt-kachel">Amt für Arbeit und Ausbildung</a>
+            <a href="https://server4.example" class="amt-kachel">Amt für Recht und Ordnung</a>
+            <a href="https://server5.example" class="amt-kachel">Amt für Zahlungsverkehr und Steuern</a>
+        </div>
+    </body>
+</html>
