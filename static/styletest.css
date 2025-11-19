@@ -1,3 +1,7 @@
+ /* einzelne CSS per URL auf den Templates einbinden, FONTS (Server muss verfügbar sein, Möglichkeit Proxys zu bauen über HTTP-Endpoints,
+ Django muss Verfügbarkeit prüfen, ansonsten lokal abspeichern, lokal-> buffern, 1 Person kann CSS für alle Teams verwalten  */
+
+
 /* ========== Allgemeine Einstellungen (Basis-Styling) ========== */
 :root {
   --bg: #f7f8fa;
@@ -33,7 +37,7 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: var(--bg); /* Heller Hintergrund – wirkt modern */
+    background-color: var(--bg); /* Heller Hintergrund – wirkt modern */   
     color: var(--font); /* Gut lesbarer Text */
 }
 
