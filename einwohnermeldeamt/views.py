@@ -20,6 +20,9 @@ def test_api(request):
 def test(request):
     return render(request, "einwohnermeldeamt/test.html")
 
+def mainpage(request):
+    return render(request, "einwohnermeldeamt/mainpage.html")
+
 
 
 
