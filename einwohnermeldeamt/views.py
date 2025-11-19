@@ -5,15 +5,13 @@ import datetime as date
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt 
-
+from fpdf import FPDF #PDF Modul importieren bezüglich Generierung PFD "Meldebestätigung", ansonsten pandas
 
 
 # Pfade zu den Registern
-personenstandsregister = "db/personenstandsregister.json"
-wohnsitzregister = "db/wohnsitzregister.json"
-adressenregister = "db/adressenregister.json"
-
-
+personenstandsregister = "/EUER_LINK/personenstandsregister.json"
+wohnsitzregister = "/EUER_LINK/wohnsitzregister.json"
+adressenregister = "/EUER_LINK/adressenregister.json"
 
 def test_api(request):
     return render(request, "einwohnermeldeamt/test_api.html")
@@ -24,6 +22,8 @@ def test(request):
 
 
 
+
+#Hier zwei Funktionen, für das Aufrufen und Persistieren von Daten im Personenstandsregister
 
 def lade_personenstandsregister():
     try:
@@ -60,7 +60,7 @@ def speichere_wohnsitzregister(daten):
 ##Funktion zum Speichern Eintrag neuer Wohnsitz in das Wohnsitz-Register
 
 @csrf_exempt
-def wohnsitz_anmelden(request):
+def buerger_services(request):
 
     daten_adressen = lade_adressenregister()
     liste_adressen = daten_adressen.get("adressenregister", [])
@@ -73,7 +73,7 @@ def wohnsitz_anmelden(request):
             "label": label
         })
 
-    if request.method == "POST" and request.POST.get("wohnsitz_anmelden") == "wohnsitz":
+    if request.method == "POST" and request.POST.get("Formulare_Meldeamt") == "wohnsitz":
         adresse_id = request.POST.get("adresse_id")
         buerger_id = request.POST.get("buerger_id")
 
@@ -97,10 +97,10 @@ def wohnsitz_anmelden(request):
             wohnsitz_daten.append(neuer_eintrag)
             speichere_wohnsitzregister(wohnsitz_daten)
 
-    return render(request, "einwohnermeldeamt/wohnsitz_anmelden.html", {
+    return render(request, "einwohnermeldeamt/buerger_services.html", {
         "adressen": adressen
     })
-
+    
 
 
 #API_URL = "http://[2001:7c0:2320:2:f816:3eff:fef8:f5b9]:8000/einwohnermeldeamt/personenstandsregister_api"
@@ -109,25 +109,28 @@ def wohnsitz_anmelden(request):
 
 #API zwischen Personenstands-Register und Ressort Gesundheit&Soziales
 
-@csrf_exempt
-def personenstandsregister_api(request):
+
+@csrf_exempt                                        #CSRF-Token nur bei POST, PUT und DELETE, nicht bei GET notwendig
+def personenstandsregister_api(request):            
 
     if request.method == "POST":
 
         vorname = request.POST.get("vorname")
         nachname_geburt = request.POST.get("nachname_geburt")
         geburtsdatum = request.POST.get("geburtsdatum")
+        staatsangehoerigkeit = request.POST.get("staatsangehoerigkeit")
 
     #with open("/var/www/django-project/test.txt", "w", encoding="utf-8") as datei:
     #datei.write(str(request.POST))
 
         erstelle_neuen_eintrag = {
             "buerger_id": str(uuid.uuid4()),
-            "public_key": None,                     #wird rausgegeben für Fachverfahren bei den anderen Ressorts
-            "private_key": None,                    #niemals nach außen, bleibt im Personenstandsregister!
-            "vorname": vorname,                     #schickt uns Gesumdheit&Soziales
-            "nachname_geburt": nachname_geburt,     #schickt uns Gesumdheit&Soziales
-            "geburtsdatum": geburtsdatum,           #schickt uns Gesumdheit&Soziales
+            "public_key": None,                                 #wird rausgegeben für Fachverfahren bei den anderen Ressorts
+            "private_key": None,                                #niemals nach außen, bleibt im Personenstandsregister!
+            "vorname": vorname,                                 #schickt uns Gesumdheit&Soziales
+            "nachname_geburt": nachname_geburt,                 #schickt uns Gesumdheit&Soziales
+            "geburtsdatum": geburtsdatum,                       #schickt uns Gesumdheit&Soziales
+            "staatsangehoerigkeit": staatsangehoerigkeit,
             "sterbedatum": None,
             "familienstand": "ledig",
             "haft_status": None,
@@ -139,10 +142,14 @@ def personenstandsregister_api(request):
         speichere_personenstandsregister(daten)
 
         
-        return HttpResponse("Daten gespeichert")
+        return HttpResponse(erstelle_neuen_eintrag["buerger_id"]) #generierte buerger_id als HTTP zurückgeben an Gesundheit&Soziales (PDF als Geburtsurkunde)
 
     
     return HttpResponse("Nur POST erlaubt", status=405)
+
+### mehrere API's bereitstellen ohne UI fpr alle Ressorts, API (z.B. Suche Vorname + Nachname eine Liste zurückgeben oder anstatt der ID)
+### 
+
 
 
 #API zwischen Personenstands-Register und den anderen Ressorts
