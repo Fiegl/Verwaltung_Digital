@@ -73,7 +73,7 @@ def wohnsitz_anmelden(request):
             "label": label
         })
 
-    if request.method == "POST" and request.POST.get("Formulare_Meldeamt") == "wohnsitz":
+    if request.method == "POST" and request.POST.get("wohnsitz_anmelden") == "wohnsitz":
         adresse_id = request.POST.get("adresse_id")
         buerger_id = request.POST.get("buerger_id")
 
@@ -97,7 +97,7 @@ def wohnsitz_anmelden(request):
             wohnsitz_daten.append(neuer_eintrag)
             speichere_wohnsitzregister(wohnsitz_daten)
 
-    return render(request, "einwohnermeldeamt/Formulare.html", {
+    return render(request, "einwohnermeldeamt/wohnsitz_anmelden.html", {
         "adressen": adressen
     })
 
