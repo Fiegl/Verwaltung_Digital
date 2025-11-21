@@ -105,6 +105,11 @@ def buerger_services(request):
     })
     
 
+#def standesamt (request):
+
+#Personenstandsregister muss geladen werden
+#Einträge aus Template standesamt übernehmen
+#neuer eintrag generiert werden (familienstand muss von ledig auf verheiratet geändert werden, buerger_id verheiratet muss rein ())
 
 #API_URL = "http://[2001:7c0:2320:2:f816:3eff:fef8:f5b9]:8000/einwohnermeldeamt/personenstandsregister_api"
 

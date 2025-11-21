@@ -8,6 +8,7 @@
     "geburtsdatum": "1988-11-19",
     "sterbedatum": null,
     "familienstand": "ledig",
+    "buerger_id_verheiratet": null,
     "haft_status": null,
     "steuer_id": null
   }
