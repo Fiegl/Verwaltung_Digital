@@ -7,6 +7,9 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt 
 from fpdf import FPDF #PDF Modul importieren bezüglich Generierung PFD "Meldebestätigung", ansonsten pandas
 
+from urllib.parse import quote  #für Session ID
+from .jwt_tooling import create_jwt, decode_jwt  #wichtig damit es funktioniert (Session-ID)
+
 
 # Pfade zu den Registern
 personenstandsregister = "/EUER_LINK/personenstandsregister.json"
@@ -199,3 +202,58 @@ def abfrage_buerger_id(request):
         )
         
     return JsonResponse({"detail": "Nur GET erlaubt."}, status=405)
+
+
+
+#Session-ID JWT
+
+##Session-ID versenden
+
+TARGET_URL = "" #Zieladresse!
+
+
+def fake_login(request):
+    request.session["user_id"] = 42
+    return HttpResponse("Fake-Login: user_id=42 wurde in die Session geschrieben.")
+
+
+
+def session_info(request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return HttpResponse("Keine user_id in der Session.")
+    return HttpResponse(f"Session user_id: {user_id}")
+
+
+def weiterleiten(request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return HttpResponse("Nicht eingeloggt!", status=401)
+
+    token = create_jwt(user_id)
+
+    redirect_url = f"{TARGET_URL}/jwt-login?token={quote(token)}"    #hier auch nochmal anpassen so wie ihr die URL nennen wollt!
+    return redirect(redirect_url)
+
+##Session-ID empfangen
+
+
+def jwt_login(request):
+    token = request.GET.get("token")
+    if not token:
+        return HttpResponse("Kein Token übergeben.", status=400)
+
+    try:
+        daten = decode_jwt(token)
+    except Exception:
+        return HttpResponse("Ungültiges oder abgelaufenes Token.", status=401)
+
+    user_id = daten.get("user_id")
+    if not user_id:
+        return HttpResponse("Token enthält keine user_id.", status=400)
+
+    # Session auf Server B setzen
+    request.session["user_id"] = user_id
+
+    # Weiter ins Dashboard
+    return redirect("mainpage") #hier anpassen, weiterleiten auf die Zielseite
