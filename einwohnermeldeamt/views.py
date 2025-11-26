@@ -107,8 +107,43 @@ def buerger_services(request):
         "adressen": adressen
     })
     
+@csrf_exempt
+def standesamt(request):
 
-#def standesamt (request):
+    daten_personenstand = lade_personenstandsregister()
+
+    if request.method == "POST" and request.POST.get("Formular_Standesamt") == "heirat":
+        buerger_id = request.POST.get("buerger_id")
+        partner_id = request.POST.get("partner_id")
+        neuer_nachname = request.POST.get("neuer_nachname")
+
+        # Bestehende Datensätze beider Personen finden
+        person = None
+        partner = None
+
+        for eintrag in daten_personenstand:
+            if eintrag["buerger_id"] == buerger_id:
+                person = eintrag
+            if eintrag["buerger_id"] == partner_id:
+                partner = eintrag
+
+        # Wenn beide Datensätze existieren → Familienstand ändern
+        if person and partner:
+
+            # Familienstand aktualisieren
+            person["familienstand"] = "verheiratet"
+            person["ehepartner_id"] = partner_id
+            person["nachname_neu"] = neuer_nachname
+
+            partner["familienstand"] = "verheiratet"
+            partner["ehepartner_id"] = buerger_id
+            partner["nachname_neu"] = neuer_nachname
+
+            # Register speichern
+            speichere_personenstandsregister(daten_personenstand)
+
+    return render(request, "standesamt/standesamt.html")
+
 
 #Personenstandsregister muss geladen werden
 #Einträge aus Template standesamt übernehmen
