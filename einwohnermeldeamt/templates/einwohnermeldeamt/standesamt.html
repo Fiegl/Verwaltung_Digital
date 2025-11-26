@@ -1,0 +1,46 @@
+{% load static %}
+<html lang="de">
+    <head>
+        <meta charset="UTF-8">
+        <title>Standesamt</title>
+        <link rel="stylesheet" href="{% static 'styletest.css' %}">
+        <style>
+
+        </style>
+    </head>
+    <body>
+        <!-- TOP BAR -->
+        <div class="topbar">
+            <h1>Dashboard</h1>
+        </div>
+        <h1>Mitarbeiter-Portal</h1>
+        <h2>Standesamt</h2>
+
+        <form>
+            <fieldset id="name-section">
+                <legend>Namensänderung nach Heirat</legend>
+
+                <label for="namensaenderung_b_id1">Bürger-ID (Person, bei der der Nachname nicht geändert wird)</label>
+                <input type="text" id="namensaenderung_b_id" name="b_id"><br>
+
+                <label for="namensaenderung_b_id2">Bürger-ID (Person, bei der der Nachname geändert wird)</label>
+                <input type="text" id="namensaenderung_b_id" name="b_id"><br>
+
+                <label for="eheschliessungsdatum">Eheschließungsdatum:</label>
+                <input type="date" id="eheschliessungsdatum" name="eheschliessungsdatum"><br>
+
+                <label for="vorname">Vorname:</label>
+                <input type="text" id="vorname" name="vorname"><br>
+
+                <label for="alterNachname">Alter Nachname:</label>
+                <input type="text" id="alterNachname" name="alterNachname"><br>
+
+                <label for="neuerNachname">Neuer Nachname:</label>
+                <input type="text" id="neuerNachname" name="neuerNachname"><br>
+
+                <button type="submit">Eingabe</button>
+
+            </fieldset>
+        </form>
+    </body>
+</html>
