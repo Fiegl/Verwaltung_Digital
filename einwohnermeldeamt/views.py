@@ -10,6 +10,9 @@ from fpdf import FPDF #PDF Modul importieren bezüglich Generierung PFD "Meldebe
 from urllib.parse import quote  #für Session ID
 from .jwt_tooling import create_jwt, decode_jwt  #wichtig damit es funktioniert (Session-ID)
 
+#Module für das Generieren eines Bürger-Passworts
+import secrets
+import string
 
 # Pfade zu den Registern
 personenstandsregister = "/EUER_LINK/personenstandsregister.json"
@@ -165,6 +168,7 @@ def personenstandsregister_api(request):
         nachname_geburt = request.POST.get("nachname_geburt")
         geburtsdatum = request.POST.get("geburtsdatum")
         staatsangehoerigkeit = request.POST.get("staatsangehoerigkeit")
+        passwort = erstelle_buerger_passwort()      #Korrelation zur Funktion Bürger-Passwort
 
     #with open("/var/www/django-project/test.txt", "w", encoding="utf-8") as datei:
     #datei.write(str(request.POST))
@@ -192,6 +196,14 @@ def personenstandsregister_api(request):
 
     
     return HttpResponse("Nur POST erlaubt", status=405)
+
+
+#Funktion zur Generierung eines Bürger-Passwortes für den Login (Challenge) auf die Mainpage
+
+def erstelle_buerger_passwort():                            # Anleitung: https://docs.python.org/3/library/secrets.html#secrets.choice
+    alphabet = string.ascii_letters + string.digits
+    return ''.join(secrets.choice(alphabet) for i in range(5))
+
 
 ### mehrere API's bereitstellen ohne UI fpr alle Ressorts, API (z.B. Suche Vorname + Nachname eine Liste zurückgeben oder anstatt der ID)
 ### 

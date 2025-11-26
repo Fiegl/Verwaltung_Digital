@@ -8,6 +8,7 @@ urlpatterns = [
     path("mainpage", views.mainpage, name="mainpage"),
     path('test/', views.test, name='test'),
     path('test_api/', views.test_api, name="test_api"),
+    path("login", views.login, name="login"),
     
     path("sessiontest/login/", views.fake_login),
     path("sessiontest/info/", views.session_info),

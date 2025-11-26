@@ -1,28 +1,29 @@
+{% load static %}
 <html lang="de">
-    <head>
-        <meta charset="UTF-8">
-        <title>Login-Seite</title>
-        <style>
 
-        </style>
-    </head>
-    <body>
-        <h1>Login</h1>
+<head>
+    <meta charset="UTF-8">
+    <title>Bürger-Login</title>
+</head>
 
-        <form action="/login" method="post">
+<body>
+    <h1>Bürgerportal – Login</h1>
 
-            <fieldset id="login">
-                <legend>Login</legend>
+    {% if error %}
+        <p style="color:red;">{{ error }}</p>
+    {% endif %}
 
-                <label for="b_id">Bürger_ID</label>
-                <input type="text" id="b_id" name="b_id" required><br>
+    <form method="post">
+        {% csrf_token %}
 
-                <label for="pin">PIN</label>
-                <input type="password" id="pin" name="pin" required><br>
+        <label>Bürger-ID:</label><br>
+        <input type="text" name="buerger_id" required><br><br>
 
-                <button type="submit">Login</button>
+        <label>Passwort:</label><br>
+        <input type="password" name="passwort" required><br><br>
 
-            </fieldset>
-        </form>
-    </body>
+        <button type="submit">Anmelden</button>
+    </form>
+
+</body>
 </html>
