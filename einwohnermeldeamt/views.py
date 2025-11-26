@@ -29,7 +29,7 @@ def test(request):
 def mainpage(request):
     return render(request, "einwohnermeldeamt/mainpage.html")
 
-def login_view(request):
+def login(request):
     if request.method == "POST":
         buerger_id = request.POST.get("buerger_id")
         passwort = request.POST.get("passwort")
@@ -202,6 +202,7 @@ def personenstandsregister_api(request):
             "familienstand": "ledig",
             "haft_status": None,
             "steuer_id": None,
+            "passwort": passwort,
         }
 
         daten = lade_personenstandsregister()
