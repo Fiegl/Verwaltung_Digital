@@ -1,14 +1,27 @@
 [
   {
-    "buerger_id": "11111111-2222-3333-4444-555555555555",
-    "public_key": "-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----\n",
-    "private key": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n",
-    "vorname": "stefan",
-    "nachname_geburt": "fiegl",
-    "geburtsdatum": "1988-11-19",
+    "buerger_id": "3bae76ab-2cb7-43da-9686-5c421bc0c5f9",
+    "public_key": null,
+    "private_key": null,
+    "vorname": "Tim",
+    "nachname_geburt": "Hauser",
+    "geburtsdatum": "2025-11-04",
+    "staatsangehoerigkeit": "UNSERSTAAT",
     "sterbedatum": null,
     "familienstand": "ledig",
-    "buerger_id_verheiratet": null,
+    "haft_status": null,
+    "steuer_id": null
+  },
+  {
+    "buerger_id": "6973abe3-4518-4ceb-9e79-10539e774194",
+    "public_key": null,
+    "private_key": null,
+    "vorname": "Hansen",
+    "nachname_geburt": "Hans",
+    "geburtsdatum": "2025-11-05",
+    "staatsangehoerigkeit": "UNSERSTAAT",
+    "sterbedatum": null,
+    "familienstand": "ledig",
     "haft_status": null,
     "steuer_id": null
   }

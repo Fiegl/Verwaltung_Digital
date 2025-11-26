@@ -233,7 +233,7 @@ def weiterleiten(request):
     token = create_jwt(user_id)
 
     redirect_url = f"{TARGET_URL}/jwt-login?token={quote(token)}"    #hier auch nochmal anpassen so wie ihr die URL nennen wollt!
-    return redirect(redirect_url)
+    return redirect(redirect_url) #Token
 
 ##Session-ID empfangen
 
