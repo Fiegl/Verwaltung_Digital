@@ -29,6 +29,25 @@ def test(request):
 def mainpage(request):
     return render(request, "einwohnermeldeamt/mainpage.html")
 
+def login_view(request):
+    if request.method == "POST":
+        buerger_id = request.POST.get("buerger_id")
+        passwort = request.POST.get("passwort")
+
+        daten = lade_personenstandsregister()
+
+        for person in daten:
+            if person.get("buerger_id") == buerger_id and person.get("passwort") == passwort:
+                request.session["user_id"] = buerger_id
+                return redirect("mainpage")
+
+        return render(request, "einwohnermeldeamt/login.html", {
+            "error": "Ungültige Bürger-ID oder Passwort."
+        })
+
+    return render(request, "einwohnermeldeamt/login.html")
+
+
 
 #Hier zwei Funktionen, für das Aufrufen und Persistieren von Daten im Personenstandsregister
 
