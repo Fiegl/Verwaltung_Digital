@@ -162,7 +162,7 @@ def standesamt(request):
             # Register speichern
             speichere_personenstandsregister(daten_personenstand)
 
-    return render(request, "standesamt/standesamt.html")
+    return render(request, "einwohnermeldeamt/standesamt.html")
 
 
 #Personenstandsregister muss geladen werden
