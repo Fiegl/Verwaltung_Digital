@@ -30,8 +30,6 @@ def mainpage(request):
     return render(request, "einwohnermeldeamt/mainpage.html")
 
 
-
-
 #Hier zwei Funktionen, für das Aufrufen und Persistieren von Daten im Personenstandsregister
 
 def lade_personenstandsregister():

@@ -9,6 +9,7 @@ urlpatterns = [
     path('test/', views.test, name='test'),
     path('test_api/', views.test_api, name="test_api"),
     path("login", views.login, name="login"),
+    path("standesamt", views.standesamt, name="standesamt"),
     
     path("sessiontest/login/", views.fake_login),
     path("sessiontest/info/", views.session_info),
