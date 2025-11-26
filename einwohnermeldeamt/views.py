@@ -15,13 +15,13 @@ import secrets
 import string
 
 # Pfade zu den Registern
-personenstandsregister = "/EUER_LINK/personenstandsregister.json"
-wohnsitzregister = "/EUER_LINK/wohnsitzregister.json"
-adressenregister = "/EUER_LINK/adressenregister.json"
+personenstandsregister = "/var/www/django-project/datenbank/personenstandsregister.json"
+wohnsitzregister = "/var/www/django-project/datenbank/wohnsitzregister.json"
+adressenregister = "/var/www/django-project/datenbank/adressenregister.json"
+
 
 def test_api(request):
     return render(request, "einwohnermeldeamt/test_api.html")
-
 
 def test(request):
     return render(request, "einwohnermeldeamt/test.html")
