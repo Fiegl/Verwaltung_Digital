@@ -28,5 +28,19 @@
     "familienstand": "ledig",
     "haft_status": null,
     "steuer_id": null
+  },
+  {
+    "buerger_id": "d62d1ffe-323c-4769-a4ce-54d89b846fdd",
+    "public_key": null,
+    "private_key": null,
+    "vorname": "Stefan",
+    "nachname_geburt": "Fiegl",
+    "geburtsdatum": "19.11.1988",
+    "staatsangehoerigkeit": null,
+    "sterbedatum": null,
+    "familienstand": "ledig",
+    "haft_status": null,
+    "steuer_id": null,
+    "passwort": "jcZdE"
   }
 ]

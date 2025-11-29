@@ -2,7 +2,7 @@ import uuid
 import json
 import time
 import datetime as date
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt 
 from fpdf import FPDF #PDF Modul importieren bezüglich Generierung PFD "Meldebestätigung", ansonsten pandas
@@ -15,13 +15,13 @@ import secrets
 import string
 
 # Pfade zu den Registern
-personenstandsregister = "/EUER_LINK/personenstandsregister.json"
-wohnsitzregister = "/EUER_LINK/wohnsitzregister.json"
-adressenregister = "/EUER_LINK/adressenregister.json"
+personenstandsregister = "/var/www/django-project/datenbank/personenstandsregister.json"
+wohnsitzregister = "/var/www/django-project/datenbank/wohnsitzregister.json"
+adressenregister = "/var/www/django-project/datenbank/adressenregister.json"
+
 
 def test_api(request):
     return render(request, "einwohnermeldeamt/test_api.html")
-
 
 def test(request):
     return render(request, "einwohnermeldeamt/test.html")
@@ -29,6 +29,23 @@ def test(request):
 def mainpage(request):
     return render(request, "einwohnermeldeamt/mainpage.html")
 
+def login(request):
+    if request.method == "POST":
+        buerger_id = request.POST.get("buerger_id")
+        passwort = request.POST.get("passwort")
+
+        daten = lade_personenstandsregister()
+
+        for person in daten:
+            if person.get("buerger_id") == buerger_id and person.get("passwort") == passwort:
+                request.session["user_id"] = buerger_id
+                return redirect("mainpage")
+
+        return render(request, "einwohnermeldeamt/login.html", {
+            "error": "Ungültige Bürger-ID oder Passwort."
+        })
+
+    return render(request, "einwohnermeldeamt/login.html")
 
 
 
@@ -145,7 +162,7 @@ def standesamt(request):
             # Register speichern
             speichere_personenstandsregister(daten_personenstand)
 
-    return render(request, "standesamt/standesamt.html")
+    return render(request, "einwohnermeldeamt/standesamt.html")
 
 
 #Personenstandsregister muss geladen werden
@@ -185,6 +202,7 @@ def personenstandsregister_api(request):
             "familienstand": "ledig",
             "haft_status": None,
             "steuer_id": None,
+            "passwort": passwort,
         }
 
         daten = lade_personenstandsregister()
