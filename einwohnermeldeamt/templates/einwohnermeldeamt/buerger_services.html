@@ -8,6 +8,9 @@
             #wohnsitz-section {
                 display: none;
             }
+            #standesamt-section {
+                display: none;
+            }
         </style>
     </head>
     <body>
@@ -37,12 +40,31 @@
 
                 <button type="submit">Eingabe</button>
             </fieldset>
+
+            <fieldset id="standesamt-section">
+                <legend>Standesamt</legend>
+
+                <label for="namensaenderung_b_id1">Bürger-ID (Person, bei der der Nachname nicht geändert wird)</label>
+                <input type="text" id="namensaenderung_b_id1" name="b_id_1"><br>
+
+                <label for="namensaenderung_b_id2">Bürger-ID (Person, bei der der Nachname geändert wird)</label>
+                <input type="text" id="namensaenderung_b_id2" name="b_id_2"><br>
+
+                <label for="eheschliessungsdatum">Eheschließungsdatum:</label>
+                <input type="date" id="eheschliessungsdatum" name="eheschliessungsdatum"><br>
+
+                <label for="neuerNachname">Neuer Nachname:</label>
+                <input type="text" id="neuerNachname" name="neuerNachname"><br>
+
+                <button type="submit">Eingabe</button>
+            </fieldset>
         </form>
 
         <script>
             // Wir holen uns das Auswahlfeld und beide Abschnitte
             const vorgangSelect = document.getElementById("Formulare_Meldeamt");
             const wohnsitzSection = document.getElementById("wohnsitz-section");
+            const standesamtSection = document.getElementById("standesamt-section");
 
             // Wenn sich die Auswahl ändert, wird diese Funktion ausgeführt
             vorgangSelect.addEventListener("change", function() {
@@ -50,11 +72,15 @@
                     
                 // Alles zuerst ausblenden
                 wohnsitzSection.style.display = "none";
+                standesamtSection.style.display = "none";
 
                 // Je nach Auswahl das richtige anzeigen
                 if (auswahl === "wohnsitz") {
                     wohnsitzSection.style.display = "block";
                 } 
+                if (auswahl === "standesamt") {
+                    standesamtSection.style.display = "block";
+                }
             })
         </script>
     </body>
