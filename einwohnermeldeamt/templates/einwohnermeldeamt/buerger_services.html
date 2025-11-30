@@ -14,6 +14,31 @@
         </style>
     </head>
     <body>
+                            <!-- TOP BAR -->
+        <div class="topbar">
+                                <!-- USER BUTTON (rechts oben) -->
+            <div class="usermenu_show_button">
+                <p>Max Mustermann</p>
+            </div>
+            <button class="navbar_show_button" onclick="document.querySelector('.navbar').classList.remove('hidden')">Menü</button>
+
+        </div>
+        <!-- Button zum Anzeigen der Navbar -->
+                    <!-- NAVBAR -->
+        <nav class="navbar hidden">
+                <!-- Button zum Verstecken der Navbar -->
+            <div class="navbar_hide_button" onclick="hideNavbar()">
+                <span class="close-icon"></span>
+                <h3>Menü</h3>
+            </div>
+                            <!-- MENÜPUNKTE -->
+            <div class="menu_items">
+                <div class="menu_item" onclick="selectItem(this)">Hauptseite</div>
+                <div class="menu_item" onclick="selectItem(this)">Amt für Meldewesen - Bürgerservice</div>
+                <div class="menu_item" onclick="selectItem(this)"></div>
+            </div>
+                
+        </nav>
         <h1>Bürgerservices</h1>
 
         <form method="POST" action="{% url 'buerger_services' %}">                <!-- Korrelation zur views.py Funktion "Wohnsitz anmelden" -->    
@@ -82,6 +107,11 @@
                     standesamtSection.style.display = "block";
                 }
             })
+        </script>
+        <script>
+            function hideNavbar() {
+                document.querySelector(".navbar").classList.add("hidden");
+            }
         </script>
     </body>
 </html>
