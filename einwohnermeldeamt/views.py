@@ -14,14 +14,18 @@ from .jwt_tooling import create_jwt, decode_jwt  #wichtig damit es funktioniert 
 import secrets
 import string
 
+
+
 # Pfade zu den Registern
 personenstandsregister = "/var/www/django-project/datenbank/personenstandsregister.json"
 wohnsitzregister = "/var/www/django-project/datenbank/wohnsitzregister.json"
 adressenregister = "/var/www/django-project/datenbank/adressenregister.json"
 
 
+
 def test_api(request):
     return render(request, "einwohnermeldeamt/test_api.html")
+
 
 def test(request):
     return render(request, "einwohnermeldeamt/test.html")
@@ -49,7 +53,7 @@ def login(request):
 
 
 
-#Hier zwei Funktionen, für das Aufrufen und Persistieren von Daten im Personenstandsregister
+#Hier zwei Hilfs-Funktionen, für das Aufrufen und Persistieren von Daten im Personenstandsregister
 
 def lade_personenstandsregister():
     try:
@@ -62,6 +66,8 @@ def speichere_personenstandsregister(daten):
     with open (personenstandsregister, "w", encoding="utf-8") as datei:
         json.dump(daten, datei, ensure_ascii=False, indent=2)
         
+
+
 
 
 def lade_adressenregister():
@@ -88,6 +94,7 @@ def speichere_wohnsitzregister(daten):
 @csrf_exempt
 def buerger_services(request):
 
+    # Adressen für das Formular laden
     daten_adressen = lade_adressenregister()
     liste_adressen = daten_adressen.get("adressenregister", [])
 
@@ -99,33 +106,77 @@ def buerger_services(request):
             "label": label
         })
 
-    if request.method == "POST" and request.POST.get("Formulare_Meldeamt") == "wohnsitz":
-        adresse_id = request.POST.get("adresse_id")
-        buerger_id = request.POST.get("buerger_id")
+    if request.method != "POST" or request.POST.get("Formulare_Meldeamt") != "wohnsitz":
+        return render(request, "einwohnermeldeamt/buerger_services.html", {
+            "adressen": adressen
+        })
 
-        bestehende_adresse = None
-        for neue_adresse in liste_adressen:
-            if neue_adresse["adresse_id"] == adresse_id:
-                bestehende_adresse = neue_adresse
-                break
+    adresse_id = request.POST.get("adresse_id")
+    buerger_id = request.POST.get("buerger_id")
 
-        if bestehende_adresse:
-            neuer_eintrag = {
-                "meldungsvorgang_id": str(uuid.uuid4()),
-                "adresse_id": adresse_id,
-                "buerger_id": buerger_id,
-                "straße_hausnummer": bestehende_adresse["straße_hausnummer"],
-                "plz_ort": bestehende_adresse["plz_ort"],
-                "land": bestehende_adresse["land"],
-            }
+    bestehende_adresse = None
+    for neue_adresse in liste_adressen:
+        if neue_adresse["adresse_id"] == adresse_id:
+            bestehende_adresse = neue_adresse
+            break
 
-            wohnsitz_daten = lade_wohnsitzregister()
-            wohnsitz_daten.append(neuer_eintrag)
-            speichere_wohnsitzregister(wohnsitz_daten)
+    daten_personen = lade_personenstandsregister()
+    person = None
+    for eintrag in daten_personen:
+        if eintrag.get("buerger_id") == buerger_id:
+            person = eintrag
+            break
 
-    return render(request, "einwohnermeldeamt/buerger_services.html", {
-        "adressen": adressen
-    })
+    if not bestehende_adresse or not person:
+        return render(request, "einwohnermeldeamt/buerger_services.html", {
+            "adressen": adressen,
+            "error": "Bürger-ID oder Adresse nicht gefunden."
+        })
+        
+    neuer_eintrag = {
+        "meldungsvorgang_id": str(uuid.uuid4()),
+        "adresse_id": adresse_id,
+        "buerger_id": buerger_id,
+        "straße_hausnummer": bestehende_adresse["straße_hausnummer"],
+        "plz_ort": bestehende_adresse["plz_ort"],
+        "land": bestehende_adresse["land"],
+    }
+
+    wohnsitz_daten = lade_wohnsitzregister()
+    wohnsitz_daten.append(neuer_eintrag)
+    speichere_wohnsitzregister(wohnsitz_daten)
+
+    datum_heute = date.date.today().strftime("%d.%m.%Y")
+
+    #ab hier erzeugen wir mit dem Modul fPDF die jeweilige PDF für den Bürger
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("helvetica", style="B", size=16)
+    pdf.cell(0, 10, "Meldebestätigung", ln=True, align="C")
+    pdf.ln(10)
+
+    pdf.set_font("helvetica", size=12)
+    textzeilen = [
+        "Hiermit wird bestätigt, dass",
+        f"{person.get('vorname', '')} {person.get('nachname_geburt', '')}",
+        f"am {datum_heute} seinen Wohnsitz an folgender Adresse angemeldet hat:",
+        "",
+        bestehende_adresse['straße_hausnummer'].replace('_', ' '),
+        bestehende_adresse['plz_ort'].replace('_', ' '),
+        bestehende_adresse['land'],
+        "",
+        f"Bürger-ID: {buerger_id}",
+        f"Meldungsvorgang-ID: {neuer_eintrag['meldungsvorgang_id']}",
+    ]
+
+    for zeile in textzeilen:
+        pdf.cell(0, 8, zeile, ln=True)
+
+    erstelltes_pdf = pdf.output(dest="S").encode("latin-1")
+    response = HttpResponse(erstelltes_pdf, content_type="application/pdf")
+    response["Content-Disposition"] = 'inline; filename="meldebestaetigung.pdf"'
+    return response
+
     
 @csrf_exempt
 def standesamt(request):
