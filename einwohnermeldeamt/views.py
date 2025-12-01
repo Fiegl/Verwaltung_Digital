@@ -148,7 +148,7 @@ def buerger_services(request):
 
     datum_heute = date.date.today().strftime("%d.%m.%Y")
 
-    #ab hier erzeugen wir mit dem Modul fPDF die jeweilige PDF für den Bürger
+    #ab hier erzeugen wir mit dem Modul fPDF die jeweilige PDF für den Bürger, Anleitung: https://py-pdf.github.io/fpdf2/Tutorial-de.html#pdfa-standards
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("helvetica", style="B", size=16)
