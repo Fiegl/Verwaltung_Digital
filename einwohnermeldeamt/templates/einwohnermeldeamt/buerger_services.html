@@ -47,6 +47,7 @@
             <select id="Formulare_Meldeamt" name="Formulare_Meldeamt">
                 <option value="">Formular auswählen</option>
                 <option value="wohnsitz">Wohnsitz anmelden</option>
+                <option value="standesamt">Standesamt</option>
             </select>
 
             <fieldset id="wohnsitz-section">
@@ -66,7 +67,10 @@
                 <button type="submit">Eingabe</button>
             </fieldset>
 
-            <fieldset id="standesamt-section">
+            <fieldset id="standesamt-section"
+                {% if not user.groups.filter(name="Mitarbeiter").exists %}
+                    style="display: none;"
+                {% endif %}>
                 <legend>Standesamt</legend>
 
                 <label for="namensaenderung_b_id1">Bürger-ID (Person, bei der der Nachname nicht geändert wird)</label>

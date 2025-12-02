@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'verwaltung_digital.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'projekt_ordner.settings')
 
 application = get_wsgi_application()
