@@ -16,21 +16,25 @@
         <h1>Mitarbeiter-Portal</h1>
         <h2>Standesamt</h2>
 
-        <form>
+        <form method="POST" action="{% url "standesamt" %}">
+	    {% csrf_token %}
+
+            <input type="hidden" name="formular_standesamt" value="heirat">
+
             <fieldset id="name-section">
                 <legend>Namensänderung nach Heirat</legend>
 
-                <label for="namensaenderung_b_id1">Bürger-ID (Person, bei der der Nachname nicht geändert wird)</label>
-                <input type="text" id="namensaenderung_b_id" name="b_id"><br>
+                <label for="buerger_id">Bürger-ID Person 1:</label>
+                <input type="text" id="buerger_id" name="buerger_id"><br>
 
-                <label for="namensaenderung_b_id2">Bürger-ID (Person, bei der der Nachname geändert wird)</label>
-                <input type="text" id="namensaenderung_b_id" name="b_id"><br>
+                <label for="partner_id">Bürger-ID Partner:</label>
+                <input type="text" id="partner_id" name="partner_id"><br>
 
                 <label for="eheschliessungsdatum">Eheschließungsdatum:</label>
                 <input type="date" id="eheschliessungsdatum" name="eheschliessungsdatum"><br>
 
                 <label for="neuerNachname">Neuer Nachname:</label>
-                <input type="text" id="neuerNachname" name="neuerNachname"><br>
+                <input type="text" id="neuer_nachname" name="neuer_nachname"><br>
 
                 <button type="submit">Eingabe</button>
 
