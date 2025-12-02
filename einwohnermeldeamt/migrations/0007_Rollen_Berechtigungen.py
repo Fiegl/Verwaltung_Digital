@@ -7,7 +7,7 @@ def create_groups(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('einwohnermeldeamt', '__first__'),  # <- anpassen (2. angepasst!
+        ('einwohnermeldeamt', '__first__'), 
     ]
 
     operations = [
