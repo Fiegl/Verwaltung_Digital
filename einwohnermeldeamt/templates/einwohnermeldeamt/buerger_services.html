@@ -54,7 +54,7 @@
                 <legend>Wohnsitz anmelden</legend>
 
                 <label for="buerger_id">Bürger-ID:</label>                          <!-- später prüfen durch public key -->    
-                <input type="text" id="buerger_id" name="buerger_id" required><br>     
+                <input type="text" id="buerger_id" name="buerger_id" required><br>           
 
                 <label for="adresse_id">Straße und Hausnummer:</label>
                 <select id="adresse_id" name="adresse_id" required>
@@ -68,11 +68,6 @@
             </fieldset>
 
             <fieldset id="standesamt-section">
-                {#                                                              <!-- Django-Syntax Zeile 71-75 erst mal deaktiviert -->  
-                {% if not user.groups.filter(name="Mitarbeiter").exists %}
-                    style="display: none;"
-                {% endif %}
-                #}
                 <legend>Standesamt</legend>
 
                 <label for="namensaenderung_b_id1">Bürger-ID (Person, bei der der Nachname nicht geändert wird)</label>
@@ -97,6 +92,9 @@
             const wohnsitzSection = document.getElementById("wohnsitz-section");
             const standesamtSection = document.getElementById("standesamt-section");
 
+            const buergerIdInput = document.getElementById("buerger_id");
+            const adresseSelect  = document.getElementById("adresse_id");
+
             // Wenn sich die Auswahl ändert, wird diese Funktion ausgeführt
             vorgangSelect.addEventListener("change", function() {
                 const auswahl = vorgangSelect.value;
@@ -105,14 +103,20 @@
                 wohnsitzSection.style.display = "none";
                 standesamtSection.style.display = "none";
 
+                // required-Flags zurücksetzen
+                buergerIdInput.required = false;
+                adresseSelect.required  = false;
+
                 // Je nach Auswahl das richtige anzeigen
                 if (auswahl === "wohnsitz") {
                     wohnsitzSection.style.display = "block";
-                } 
-                if (auswahl === "standesamt") {
+                    buergerIdInput.required = true;
+                    adresseSelect.required  = true;
+                } else if (auswahl === "standesamt") {
                     standesamtSection.style.display = "block";
+            // falls du hier Felder als required willst, kannst du das auch setzen
                 }
-            })
+            });
         </script>
         <script>
             function hideNavbar() {
