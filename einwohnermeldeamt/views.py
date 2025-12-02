@@ -77,6 +77,9 @@ def lade_adressenregister():
     except:
         return {"adressenregister": []}
 
+
+#Hier zwei Hilfs-Funktionen, für das Aufrufen und Persistieren von Daten im Wohnsitzregister
+
 def lade_wohnsitzregister():
     try:
         with open(wohnsitzregister, "r", encoding="utf-8") as datei:
