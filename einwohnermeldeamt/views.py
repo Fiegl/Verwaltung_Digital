@@ -67,7 +67,7 @@ def speichere_personenstandsregister(daten):
         json.dump(daten, datei, ensure_ascii=False, indent=2)
         
 
-
+#Hier eine Hilfs-Funktion, für das Aufrufen und Persistieren von Daten im Adressenregister
 
 
 def lade_adressenregister():
@@ -92,7 +92,7 @@ def speichere_wohnsitzregister(daten):
         json.dump(daten, datei, ensure_ascii=False, indent=2)  
 
 
-##Funktion zum Speichern Eintrag neuer Wohnsitz in das Wohnsitz-Register
+##Funktion zum Speichern der Einträge durch die Formulare
 
 @csrf_exempt
 def buerger_services(request):
@@ -109,78 +109,166 @@ def buerger_services(request):
             "label": label
         })
 
-    if request.method != "POST" or request.POST.get("Formulare_Meldeamt") != "wohnsitz":
+    #Ab hier laden wir die entsprechenden Formulare
+    if request.method != "POST":
         return render(request, "einwohnermeldeamt/buerger_services.html", {
             "adressen": adressen
         })
 
-    adresse_id = request.POST.get("adresse_id")
-    buerger_id = request.POST.get("buerger_id")
+    vorgang = request.POST.get("Formulare_Meldeamt")
 
-    bestehende_adresse = None
-    for neue_adresse in liste_adressen:
-        if neue_adresse["adresse_id"] == adresse_id:
-            bestehende_adresse = neue_adresse
-            break
+    #Formular Wohnsitz anmelden
+    if vorgang == "wohnsitz":
+        adresse_id = request.POST.get("adresse_id")
+        buerger_id = request.POST.get("buerger_id")
 
-    daten_personen = lade_personenstandsregister()
-    person = None
-    for eintrag in daten_personen:
-        if eintrag.get("buerger_id") == buerger_id:
-            person = eintrag
-            break
+        bestehende_adresse = None
+        for neue_adresse in liste_adressen:
+            if neue_adresse["adresse_id"] == adresse_id:
+                bestehende_adresse = neue_adresse
+                break
 
-    if not bestehende_adresse or not person:
-        return render(request, "einwohnermeldeamt/buerger_services.html", {
-            "adressen": adressen,
-            "error": "Bürger-ID oder Adresse nicht gefunden."
-        })
-        
-    neuer_eintrag = {
-        "meldungsvorgang_id": str(uuid.uuid4()),
-        "adresse_id": adresse_id,
-        "buerger_id": buerger_id,
-        "straße_hausnummer": bestehende_adresse["straße_hausnummer"],
-        "plz_ort": bestehende_adresse["plz_ort"],
-        "land": bestehende_adresse["land"],
-    }
+        daten_personen = lade_personenstandsregister()
+        person = None
+        for eintrag in daten_personen:
+            if eintrag.get("buerger_id") == buerger_id:
+                person = eintrag
+                break
 
-    wohnsitz_daten = lade_wohnsitzregister()
-    wohnsitz_daten.append(neuer_eintrag)
-    speichere_wohnsitzregister(wohnsitz_daten)
+        if not bestehende_adresse or not person:
+            return render(request, "einwohnermeldeamt/buerger_services.html", {
+                "adressen": adressen,
+                "error": "Bürger-ID oder Adresse nicht gefunden."
+            })
 
-    datum_heute = date.date.today().strftime("%d.%m.%Y")
+        neuer_eintrag = {
+            "meldungsvorgang_id": str(uuid.uuid4()),
+            "adresse_id": adresse_id,
+            "buerger_id": buerger_id,
+            "straße_hausnummer": bestehende_adresse["straße_hausnummer"],
+            "plz_ort": bestehende_adresse["plz_ort"],
+            "land": bestehende_adresse["land"],
+        }
 
-    #ab hier erzeugen wir mit dem Modul fPDF die jeweilige PDF für den Bürger, Anleitung: https://py-pdf.github.io/fpdf2/Tutorial-de.html#pdfa-standards
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("helvetica", style="B", size=16)
-    pdf.cell(0, 10, "Meldebestätigung", ln=True, align="C")
-    pdf.ln(10)
+        wohnsitz_daten = lade_wohnsitzregister()
+        wohnsitz_daten.append(neuer_eintrag)
+        speichere_wohnsitzregister(wohnsitz_daten)
 
-    pdf.set_font("helvetica", size=12)
-    textzeilen = [
-        "Hiermit wird bestätigt, dass",
-        f"{person.get('vorname', '')} {person.get('nachname_geburt', '')}",
-        f"am {datum_heute} seinen Wohnsitz an folgender Adresse angemeldet hat:",
-        "",
-        bestehende_adresse['straße_hausnummer'].replace('_', ' '),
-        bestehende_adresse['plz_ort'].replace('_', ' '),
-        bestehende_adresse['land'],
-        "",
-        f"Bürger-ID: {buerger_id}",
-        f"Meldungsvorgang-ID: {neuer_eintrag['meldungsvorgang_id']}",
-    ]
+        # PDF bauen (dein bisheriger Code)
+        datum_heute = date.date.today().strftime("%d.%m.%Y")
 
-    for zeile in textzeilen:
-        pdf.cell(0, 8, zeile, ln=True)
+        #ab hier erzeugen wir mit dem Modul fPDF die jeweilige PDF für den Bürger, Anleitung: https://py-pdf.github.io/fpdf2/Tutorial-de.html#pdfa-standards
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("helvetica", style="B", size=16)
+        pdf.cell(0, 10, "Meldebestätigung", ln=True, align="C")
+        pdf.ln(10)
 
-    erstelltes_pdf = pdf.output(dest="S").encode("latin-1")
-    response = HttpResponse(erstelltes_pdf, content_type="application/pdf")
-    response["Content-Disposition"] = 'inline; filename="meldebestaetigung.pdf"'
-    return response
+        pdf.set_font("helvetica", size=12)
+        textzeilen = [
+            "Hiermit wird bestätigt, dass",
+            f"{person.get('vorname', '')} {person.get('nachname_geburt', '')}",
+            f"am {datum_heute} seinen Wohnsitz an folgender Adresse angemeldet hat:",
+            "",
+            bestehende_adresse['straße_hausnummer'].replace('_', ' '),
+            bestehende_adresse['plz_ort'].replace('_', ' '),
+            bestehende_adresse['land'],
+            "",
+            f"Bürger-ID: {buerger_id}",
+            f"Meldungsvorgang-ID: {neuer_eintrag['meldungsvorgang_id']}",
+        ]
 
-    
+        for zeile in textzeilen:
+            pdf.cell(0, 8, zeile, ln=True)
+
+        erstelltes_pdf = pdf.output(dest="S").encode("latin-1")
+        response = HttpResponse(erstelltes_pdf, content_type="application/pdf")
+        response["Content-Disposition"] = 'inline; filename="meldebestaetigung.pdf"'
+        return response
+
+    #Formular Hochzeit
+    elif vorgang == "standesamt":
+        b_id_1 = request.POST.get("b_id_1") 
+        b_id_2 = request.POST.get("b_id_2")  
+        neuerNachname = request.POST.get("neuerNachname")
+        eheschliessungsdatum = request.POST.get("eheschliessungsdatum")
+
+        daten_personen = lade_personenstandsregister()
+
+        person1 = None
+        person2 = None
+        for eintrag in daten_personen:
+            if eintrag.get("buerger_id") == b_id_1:
+                person1 = eintrag
+            if eintrag.get("buerger_id") == b_id_2:
+                person2 = eintrag
+
+        if not person1 or not person2:
+            return render(request, "einwohnermeldeamt/buerger_services.html", {
+                "adressen": adressen,
+                "error": "Eine oder beide Bürger-IDs wurden nicht gefunden."
+            })
+
+        person1["familienstand"] = "verheiratet"
+        person1["ehepartner_id"] = b_id_2
+        person1["eheschliessungsdatum"] = eheschliessungsdatum
+
+        person2["familienstand"] = "verheiratet"
+        person2["ehepartner_id"] = b_id_1
+        person2["eheschliessungsdatum"] = eheschliessungsdatum
+
+        person2["nachname_neu"] = neuerNachname
+
+        speichere_personenstandsregister(daten_personen)
+
+        datum_heute = date.date.today().strftime("%d.%m.%Y")
+        datum_ehe = eheschliessungsdatum
+        try:
+            if eheschliessungsdatum:
+                jahr, monat, tag = eheschliessungsdatum.split("-")
+                datum_ehe = f"{tag}.{monat}.{jahr}"
+        except Exception:
+            # Falls irgendwas schiefgeht, einfach Originalstring lassen
+            pass
+
+        #ab hier erzeugen wir als PFD die Heiratsurkunde
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("helvetica", style="B", size=16)
+        pdf.cell(0, 10, "Heiratsurkunde", ln=True, align="C")
+        pdf.ln(10)
+
+        pdf.set_font("helvetica", size=12)
+
+        name1 = f"{person1.get('vorname', '')} {person1.get('nachname_geburt', '')}"
+        name2_geburtsname = f"{person2.get('vorname', '')} {person2.get('nachname_geburt', '')}"
+        name2_neu = f"{person2.get('vorname', '')} {neuerNachname}"
+
+        urkundennummer = str(uuid.uuid4())
+
+        textzeilen = [
+            f"Urkundennummer: {urkundennummer}",
+            "",
+            f"Am {datum_ehe} wurde die Ehe geschlossen zwischen",
+            f"{name1}",
+            "und",
+            f"{name2_geburtsname}.",
+            "",
+            f"Die Person mit der Bürger-ID {b_id_2} führt ab Eheschließung den Familiennamen:",
+            f"{neuerNachname}",
+            "",
+            f"Eintrag im Personenstandsregister vom {datum_heute}.",
+        ]
+
+        for zeile in textzeilen:
+            pdf.cell(0, 8, zeile, ln=True)
+
+        pdf_hochzeit = pdf.output(dest="S").encode("latin-1")
+        response = HttpResponse(pdf_hochzeit, content_type="application/pdf")
+        response["Content-Disposition"] = 'inline; filename="heiratsurkunde.pdf\"'
+        return response
+
+#Funktion nicht in Benutzung
 @csrf_exempt
 def standesamt(request):
 
@@ -219,6 +307,7 @@ def standesamt(request):
     return render(request, "einwohnermeldeamt/standesamt.html")
 
 
+
 #Personenstandsregister muss geladen werden
 #Einträge aus Template standesamt übernehmen
 #neuer eintrag generiert werden (familienstand muss von ledig auf verheiratet geändert werden, buerger_id verheiratet muss rein ())
@@ -251,7 +340,7 @@ def personenstandsregister_api(request):
             "vorname": vorname,                                 #schickt uns Gesumdheit&Soziales
             "nachname_geburt": nachname_geburt,                 #schickt uns Gesumdheit&Soziales
             "geburtsdatum": geburtsdatum,                       #schickt uns Gesumdheit&Soziales
-            "staatsangehoerigkeit": staatsangehoerigkeit,
+            "staatsangehoerigkeit": staatsangehoerigkeit,       #schickt uns Gesumdheit&Soziales
             "sterbedatum": None,
             "familienstand": "ledig",
             "haft_status": None,

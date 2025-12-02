@@ -67,10 +67,12 @@
                 <button type="submit">Eingabe</button>
             </fieldset>
 
-            <fieldset id="standesamt-section"
+            <fieldset id="standesamt-section">
+                {#                                                              <!-- Django-Syntax Zeile 71-75 erst mal deaktiviert -->  
                 {% if not user.groups.filter(name="Mitarbeiter").exists %}
                     style="display: none;"
-                {% endif %}>
+                {% endif %}
+                #}
                 <legend>Standesamt</legend>
 
                 <label for="namensaenderung_b_id1">Bürger-ID (Person, bei der der Nachname nicht geändert wird)</label>
