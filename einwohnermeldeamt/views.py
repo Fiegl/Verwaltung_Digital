@@ -154,7 +154,7 @@ def buerger_services(request):
         wohnsitz_daten.append(neuer_eintrag)
         speichere_wohnsitzregister(wohnsitz_daten)
 
-        # PDF bauen (dein bisheriger Code)
+        # PDF bauen (dein bisheriger Code)                          #XHTML benutzen statt fPDF
         datum_heute = date.date.today().strftime("%d.%m.%Y")
 
         #ab hier erzeugen wir mit dem Modul fPDF die jeweilige PDF für den Bürger, Anleitung: https://py-pdf.github.io/fpdf2/Tutorial-de.html#pdfa-standards
@@ -231,7 +231,7 @@ def buerger_services(request):
             # Falls irgendwas schiefgeht, einfach Originalstring lassen
             pass
 
-        #ab hier erzeugen wir als PFD die Heiratsurkunde
+        #ab hier erzeugen wir als PFD die Heiratsurkunde                #XHTML benutzen statt fPDF
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("helvetica", style="B", size=16)

@@ -17,3 +17,7 @@ with open("signed.xml", "wb") as datei:
 with open("signed.xml") as signierteDatei:
     signed = etree.parse(signierteDatei)
 XMLVerifier().verify(signed, x509_cert=cert).signed_xml
+
+
+
+#XHTML benutzen statt fPDF
