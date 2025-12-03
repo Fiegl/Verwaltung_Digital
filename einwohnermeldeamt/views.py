@@ -1,6 +1,7 @@
 import uuid
 import json
 import time
+import requests
 import datetime as date
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
@@ -352,6 +353,17 @@ def personenstandsregister_api(request):
         daten.append(erstelle_neuen_eintrag)
         speichere_personenstandsregister(daten)
 
+
+        url_steuern_bank = "http://[2001:7c0:2320:2:f816:3eff:fe82:34b2]:8000/bank/MELDUNG"  #API an Ressort "Steuern&Bank"
+        
+        meldung_data =  {
+            "buerger_id": erstelle_neuen_eintrag["buerger_id"],
+            "vorname": erstelle_neuen_eintrag["vorname"],
+            "nachname": erstelle_neuen_eintrag["nachname_geburt"],
+        }  
+            
+        meldung_data = requests.post(url_steuern_bank, data = meldung_data)
+
         
         return HttpResponse(erstelle_neuen_eintrag["buerger_id"]) #generierte buerger_id als HTTP zurückgeben an Gesundheit&Soziales (PDF als Geburtsurkunde)
 
@@ -371,7 +383,7 @@ def erstelle_buerger_passwort():                            # Anleitung: https:/
 
 
 
-#API zwischen Personenstands-Register und den anderen Ressorts
+#API zwischen Personenstands-Register und den anderen Ressorts (Funktion deaktiviert)
 
 def abfrage_buerger_id(request):
     
@@ -417,7 +429,7 @@ def abfrage_buerger_id(request):
 
 ##Session-ID versenden
 
-TARGET_URL = "" #Zieladresse!
+TARGET_URL = "http://[2001:7c0:2320:2:f816:3eff:feb6:6731]:8000" #Zieladresse von Ressort "Arbeit & Bildung"
 
 
 def fake_login(request):
