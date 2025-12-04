@@ -348,7 +348,8 @@ def personenstandsregister_api(request):
             "steuer_id": None,
             "passwort": passwort,
         }
-
+        #erweitern, dass tod und Immigration aufgenommen werden können
+        
         daten = lade_personenstandsregister()
         daten.append(erstelle_neuen_eintrag)
         speichere_personenstandsregister(daten)
