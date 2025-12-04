@@ -331,9 +331,6 @@ def personenstandsregister_api(request):
         staatsangehoerigkeit = request.POST.get("staatsangehoerigkeit")
         passwort = erstelle_buerger_passwort()      #Korrelation zur Funktion Bürger-Passwort
 
-    #with open("/var/www/django-project/test.txt", "w", encoding="utf-8") as datei:
-    #datei.write(str(request.POST))
-
         erstelle_neuen_eintrag = {
             "buerger_id": str(uuid.uuid4()),
             "public_key": None,                                 #wird rausgegeben für Fachverfahren bei den anderen Ressorts
@@ -365,10 +362,8 @@ def personenstandsregister_api(request):
             
         meldung_data = requests.post(url_steuern_bank, data = meldung_data)
 
-        
         return HttpResponse(erstelle_neuen_eintrag["buerger_id"]) #generierte buerger_id als HTTP zurückgeben an Gesundheit&Soziales (PDF als Geburtsurkunde)
 
-    
     return HttpResponse("Nur POST erlaubt", status=405)
 
 
