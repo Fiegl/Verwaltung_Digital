@@ -2,147 +2,63 @@
     "adressenregister": [
         {
             "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554a",
-            "straße_hausnummer": "Ahornstraße_12",
+            "straße_hausnummer": "Gutenbergstraße_48",
             "plz_ort": "123456_Musterdorf",
             "land": "Musterland"
         },
         {
             "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554b",
-            "straße_hausnummer": "Birkenweg_7a",
+            "straße_hausnummer": "Senefelderstraße_11",
             "plz_ort": "123456_Musterdorf",
             "land": "Musterland"
         },
         {
             "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554c",
-            "straße_hausnummer": "Lindenweg_34",
+            "straße_hausnummer": "Augustenstraße_8",
             "plz_ort": "123456_Musterdorf",
             "land": "Musterland"
         },
         {
             "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554d",
-            "straße_hausnummer": "Rosenallee_2b",
+            "straße_hausnummer": "Rosenstraße_24",
             "plz_ort": "123456_Musterdorf",
             "land": "Musterland"
         },
         {
             "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554e",
-            "straße_hausnummer": "Kastanienring_56",
+            "straße_hausnummer": "Urbanstraße_44",
             "plz_ort": "123456_Musterdorf",
             "land": "Musterland"
         },
         {
             "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554f",
-            "straße_hausnummer": "Eichenweg_9",
+            "straße_hausnummer": "Haußmannstraße_6",
             "plz_ort": "123456_Musterdorf",
             "land": "Musterland"
         },
         {
             "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554g",
-            "straße_hausnummer": "Sonnenplatz_1",
+            "straße_hausnummer": "Gerokstraße_21",
             "plz_ort": "123456_Musterdorf",
             "land": "Musterland"
         },
         {
             "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554h",
-            "straße_hausnummer": "Mühlenstraße_18",
+            "straße_hausnummer": "Im_Himmelsberg_12",
             "plz_ort": "123456_Musterdorf",
             "land": "Musterland"
         },
         {
             "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554i",
-            "straße_hausnummer": "Hafenweg_23",
+            "straße_hausnummer": "Am_Kriegbergturm_43",
             "plz_ort": "123456_Musterdorf",
             "land": "Musterland"
         },
         {
             "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554bj",
-            "straße_hausnummer": "Feldgasse_40",
+            "straße_hausnummer": "Alexanderstraße_85",
             "plz_ort": "123456_Musterdorf",
             "land": "Musterland"
-        },
-        {
-            "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554k",
-            "straße_hausnummer": "Parkstraße_5",
-            "plz_ort": "123456_Musterdorf",
-            "land": "Musterland"
-        },
-        {
-            "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554l",
-            "straße_hausnummer": "Parkstraße_5",
-            "plz_ort": "123456_Musterdorf",
-            "land": "Musterland"
-        },
-        {
-            "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554m",
-            "straße_hausnummer": "Gartenweg_77",
-            "plz_ort": "123456_Musterdorf",
-            "land": "Musterland"
-        },
-        {
-            "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554n",
-            "straße_hausnummer": "Kirchgasse_3",
-            "plz_ort": "123456_Musterdorf",
-            "land": "Musterland"
-        },
-        {
-            "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554o",
-            "straße_hausnummer": "Bahnhofstraße_101",
-            "plz_ort": "123456_Musterdorf",
-            "land": "Musterland"
-        },
-        {
-            "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554p",
-            "straße_hausnummer": "Weidenweg_14c",
-            "plz_ort": "123456_Musterdorf",
-            "land": "Musterland"
-        },
-        {
-            "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554q",
-            "straße_hausnummer": "Talstraße_28",
-            "plz_ort": "123456_Musterdorf",
-            "land": "Musterland"
-        },
-        {
-            "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554r",
-            "straße_hausnummer": "Hainweg_6",
-            "plz_ort": "123456_Musterdorf",
-            "land": "Musterland"
-        },
-        {
-            "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554s",
-            "straße_hausnummer": "Brunnenstraße_50",
-            "plz_ort": "123456_Musterdorf",
-            "land": "Musterland"
-        },
-        {
-            "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554t",
-            "straße_hausnummer": "Waldweg_11b",
-            "plz_ort": "123456_Musterdorf",
-            "land": "Musterland"
-        },
-        {
-            "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554u",
-            "straße_hausnummer": "Quellenweg_92",
-            "plz_ort": "123456_Musterdorf",
-            "land": "Musterland"
-        },
-        {
-            "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554v",
-            "straße_hausnummer": "Dorfstraße_8",
-            "plz_ort": "123456_Musterdorf",
-            "land": "Musterland"
-        },
-        {
-            "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554w",
-            "straße_hausnummer": "Sternenweg_21",
-            "plz_ort": "123456_Musterdorf",
-            "land": "Musterland"
-        },
-        {
-            "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554x",
-            "straße_hausnummer": "Platanenallee_64",
-            "plz_ort": "123456_Musterdorf",
-            "land": "Musterland"
-        } 
+        }
     ]
 }
