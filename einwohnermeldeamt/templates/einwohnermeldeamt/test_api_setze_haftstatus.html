@@ -1,0 +1,26 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <title>Haftstatus setzen – Test</title>
+</head>
+<body>
+
+<h1>Haftstatus für Bürger setzen (Test)</h1>
+
+<form method="post" action="{% url 'setze_haftstatus' %}">
+    {% csrf_token %}
+    <label>Bürger-ID:
+        <input type="text" name="buerger_id">
+    </label><br>
+
+    <label>Haftstatus (optional, Standard = inhaftiert):
+        <input type="text" name="haft_status" placeholder="inhaftiert">
+    </label><br>
+
+    <button type="submit">Haftstatus speichern</button>
+</form>
+
+</body>
+</html>
