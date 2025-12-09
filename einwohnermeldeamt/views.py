@@ -191,7 +191,6 @@ def buerger_services(request):
     elif vorgang == "standesamt":
         b_id_1 = request.POST.get("b_id_1") 
         b_id_2 = request.POST.get("b_id_2")  
-        neuerNachname = request.POST.get("neuerNachname")
         eheschliessungsdatum = request.POST.get("eheschliessungsdatum")
 
         daten_personen = lade_personenstandsregister()
@@ -210,14 +209,16 @@ def buerger_services(request):
                 "error": "Eine oder beide Bürger-IDs wurden nicht gefunden."
             })
 
+        neuerNachname = person1.get("nachname")
+
         person1["familienstand"] = "verheiratet"
         person1["ehepartner_id"] = b_id_2
         person1["eheschliessungsdatum"] = eheschliessungsdatum
+        person1["nachname_neu"] = neuerNachname
 
         person2["familienstand"] = "verheiratet"
         person2["ehepartner_id"] = b_id_1
         person2["eheschliessungsdatum"] = eheschliessungsdatum
-
         person2["nachname_neu"] = neuerNachname
 
         speichere_personenstandsregister(daten_personen)
