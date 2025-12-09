@@ -1,0 +1,26 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <title>Beruf setzen – Test</title>
+</head>
+<body>
+
+<h1>Beruf für Bürger setzen (Test)</h1>
+
+<form method="post" action="{% url 'setze_beruf' %}">
+    {% csrf_token %}
+    <label>Bürger-ID:
+        <input type="text" name="buerger_id">
+    </label><br>
+
+    <label>Beruf:
+        <input type="text" name="beruf">
+    </label><br>
+
+    <button type="submit">Beruf speichern</button>
+</form>
+
+</body>
+</html>
