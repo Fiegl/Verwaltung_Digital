@@ -9,12 +9,12 @@
     "staatsangehoerigkeit": null,
     "sterbedatum": null,
     "familienstand": "ledig",
-    "haft_status": null,
+    "haft_status": false,
     "steuer_id": null,
     "passwort": "jcZdE"
   },
   {
-    "buerger_id": "ba8b40f7-5a50-4968-a4a3-fc2871c1bc0f",
+    "buerger_id": "abc",
     "public_key": null,
     "private_key": null,
     "vorname": "Martin",
@@ -24,13 +24,13 @@
     "sterbedatum": null,
     "lebensstatus": "lebend",
     "familienstand": "ledig",
-    "haft_status": null,
+    "haft_status": false,
     "steuer_id": null,
     "beruf": null,
-    "passwort": "HVNcC"
+    "passwort": "dvm23"
   },
   {
-    "buerger_id": "89f4d541-8b50-416f-a6a8-7779cd495c2b",
+    "buerger_id": "dvm",
     "public_key": null,
     "private_key": null,
     "vorname": "Max",
@@ -40,9 +40,24 @@
     "sterbedatum": null,
     "lebensstatus": "lebend",
     "familienstand": "ledig",
-    "haft_status": null,
+    "haft_status": false,
     "steuer_id": null,
     "beruf": null,
-    "passwort": "TYgtr"
+    "passwort": "abc23"
+  },
+  {
+    "buerger_id": "4493ffb9-1513-42f9-b709-35ebdddc0296",
+    "public_key": null,
+    "private_key": null,
+    "vorname": "Simon ",
+    "nachname_geburt": "Maier",
+    "geburtsdatum": "10.10.2004",
+    "sterbedatum": null,
+    "lebensstatus": "lebend",
+    "familienstand": "ledig",
+    "haft_status": false,
+    "steuer_id": null,
+    "beruf": null,
+    "passwort": "8stLy"
   }
 ]

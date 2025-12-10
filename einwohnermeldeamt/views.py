@@ -337,7 +337,6 @@ def personenstandsregister_api(request):
         vorname = request.POST.get("vorname")
         nachname_geburt = request.POST.get("nachname_geburt")
         geburtsdatum = request.POST.get("geburtsdatum")
-        staatsangehoerigkeit = request.POST.get("staatsangehoerigkeit")
         passwort = erstelle_buerger_passwort()      #Korrelation zur Funktion Bürger-Passwort
 
         erstelle_neuen_eintrag = {
@@ -347,15 +346,16 @@ def personenstandsregister_api(request):
             "vorname": vorname,                                 #schickt uns Gesumdheit&Soziales
             "nachname_geburt": nachname_geburt,                 #schickt uns Gesumdheit&Soziales
             "geburtsdatum": geburtsdatum,                       #schickt uns Gesumdheit&Soziales
-            "staatsangehoerigkeit": staatsangehoerigkeit,       #schickt uns Gesumdheit&Soziales
             "sterbedatum": None,                                #schickt uns Gesumdheit&Soziales (bei Todesurkunde)
             "lebensstatus": "lebend",                           #ändert sich bei Tod zu "verstorben"
             "familienstand": "ledig",
-            "haft_status": None,
+            "haft_status": False,                               #Status True oder False (bei Haft-Entlassung) sendet uns Recht&Ordnung
             "steuer_id": None,
             "beruf": None,                                      #holen wir von "Arbeit&Bildung"
             "passwort": passwort,
         }
+        
+        #erweitern um Immigration
 
         daten = lade_personenstandsregister()
         daten.append(erstelle_neuen_eintrag)
@@ -395,6 +395,8 @@ def personenstandsregister_api(request):
             "nachname": erstelle_neuen_eintrag["nachname_geburt"],
         }
         requests.post(url_recht_ordnung, json=meldung_recht_ordnung)
+        
+        #funktion erweitern, dass Recht&Ordnung vorname, nachnname und geburtsdatum sendet (also JSON), dass wir die buerger_id zurückgeben
 
         return HttpResponse(erstelle_neuen_eintrag["buerger_id"])  # generierte buerger_id als HTTP zurückgeben an Gesundheit&Soziales (PDF als Geburtsurkunde)
 
