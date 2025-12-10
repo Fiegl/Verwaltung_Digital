@@ -395,6 +395,8 @@ def personenstandsregister_api(request):
             "nachname": erstelle_neuen_eintrag["nachname_geburt"],
         }
         requests.post(url_recht_ordnung, json=meldung_recht_ordnung)
+        
+        #funktion erweitern, dass Recht&Ordnung vorname, nachnname und geburtsdatum sendet (also JSON), dass wir die buerger_id zurückgeben
 
         return HttpResponse(erstelle_neuen_eintrag["buerger_id"])  # generierte buerger_id als HTTP zurückgeben an Gesundheit&Soziales (PDF als Geburtsurkunde)
 
