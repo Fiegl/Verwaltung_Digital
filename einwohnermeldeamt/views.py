@@ -40,6 +40,10 @@ def test(request):
 
 
 def mainpage(request):
+    
+    if not request.session.get("user_id"):
+        return redirect("login")
+
     return render(request, "einwohnermeldeamt/mainpage.html")
 
 def login(request):
@@ -105,6 +109,9 @@ def speichere_wohnsitzregister(daten):
 
 @csrf_exempt
 def buerger_services(request):
+    
+    if not request.session.get("user_id"):
+        return redirect("login")
 
     # Adressen für das Formular laden
     daten_adressen = lade_adressenregister()
