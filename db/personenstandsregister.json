@@ -3,8 +3,8 @@
     "buerger_id": "d62d1ffe-323c-4769-a4ce-54d89b846fdd",
     "public_key": null,
     "private_key": null,
-    "vorname": "Stefan",
-    "nachname_geburt": "Fiegl",
+    "vorname": "Max",
+    "nachname_geburt": "Mustermann",
     "geburtsdatum": "19.11.1988",
     "staatsangehoerigkeit": null,
     "sterbedatum": null,
@@ -12,6 +12,20 @@
     "haft_status": false,
     "steuer_id": null,
     "passwort": "jcZdE"
+  },
+  {
+    "buerger_id": "d62d1ffe-323c-4769-5555-54d89b846fdd",
+    "public_key": null,
+    "private_key": null,
+    "vorname": "Lara",
+    "nachname_geburt": "Müller",
+    "geburtsdatum": "19.11.1990",
+    "staatsangehoerigkeit": null,
+    "sterbedatum": null,
+    "familienstand": "ledig",
+    "haft_status": false,
+    "steuer_id": null,
+    "passwort": "abcdef"
   },
   {
     "buerger_id": "abc",
@@ -59,5 +73,20 @@
     "steuer_id": null,
     "beruf": null,
     "passwort": "8stLy"
+  },
+  {
+    "buerger_id": "9d65e52a-7832-49d2-b7c7-02b00f74071c",
+    "public_key": null,
+    "private_key": null,
+    "vorname": "Test",
+    "nachname_geburt": null,
+    "geburtsdatum": "2025-12-12",
+    "sterbedatum": null,
+    "lebensstatus": "lebend",
+    "familienstand": "ledig",
+    "haft_status": false,
+    "steuer_id": null,
+    "beruf": null,
+    "passwort": "pIuqK"
   }
 ]
