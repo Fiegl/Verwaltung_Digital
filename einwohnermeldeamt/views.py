@@ -349,7 +349,7 @@ def personenstandsregister_api(request):
             "sterbedatum": None,                                #schickt uns Gesumdheit&Soziales (bei Todesurkunde)
             "lebensstatus": "lebend",                           #ändert sich bei Tod zu "verstorben"
             "familienstand": "ledig",
-            "haft_status": None,
+            "haft_status": False,                               #Status True oder False (bei Haft-Entlassung) sendet uns Recht&Ordnung
             "steuer_id": None,
             "beruf": None,                                      #holen wir von "Arbeit&Bildung"
             "passwort": passwort,
