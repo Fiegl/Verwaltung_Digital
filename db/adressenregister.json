@@ -2,62 +2,62 @@
     "adressenregister": [
         {
             "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554a",
-            "straße_hausnummer": "Gutenbergstraße_48",
-            "plz_ort": "70176_Stuttgart",
+            "straße_hausnummer": "Marktplatz 1",
+            "plz_ort": "70173 Stuttgart",
             "land": "The Länd"
         },
         {
             "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554b",
-            "straße_hausnummer": "Senefelderstraße_11",
-            "plz_ort": "70178_Stuttgart",
+            "straße_hausnummer": "Hahnemannstraße 1",
+            "plz_ort": "70191 Stuttgart",
             "land": "The Länd"
         },
         {
             "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554c",
-            "straße_hausnummer": "Augustenstraße_8",
-            "plz_ort": "70178_Stuttgart",
+            "straße_hausnummer": "Königstraße 1A",
+            "plz_ort": "70173 Stuttgart",
             "land": "The Länd"
         },
         {
             "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554d",
-            "straße_hausnummer": "Rosenstraße_24",
-            "plz_ort": "70182_Stuttgart",
+            "straße_hausnummer": "Mailänder Platz 1",
+            "plz_ort": "70173 Stuttgart",
             "land": "The Länd"
         },
         {
             "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554e",
-            "straße_hausnummer": "Urbanstraße_44",
-            "plz_ort": "70182_Stuttgart",
+            "straße_hausnummer": "Bebelstraße 22",
+            "plz_ort": "70193 Stuttgart",
             "land": "The Länd"
         },
         {
             "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554f",
-            "straße_hausnummer": "Haußmannstraße_6",
-            "plz_ort": "70188_Stuttgart",
+            "straße_hausnummer": "Bellingweg 21",
+            "plz_ort": "70372 Stuttgart",
             "land": "The Länd"
         },
         {
             "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554g",
-            "straße_hausnummer": "Gerokstraße_21",
-            "plz_ort": "70184_Stuttgart",
+            "straße_hausnummer": "Urbanstraße 20",
+            "plz_ort": "70182 Stuttgart",
             "land": "The Länd"
         },
         {
             "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554h",
-            "straße_hausnummer": "Im_Himmelsberg_12",
-            "plz_ort": "70192_Stuttgart",
+            "straße_hausnummer": "Oberer Schloßgarten 6",
+            "plz_ort": "70173 Stuttgart",
             "land": "The Länd"
         },
         {
             "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554i",
-            "straße_hausnummer": "Am_Kriegbergturm_43",
-            "plz_ort": "70192_Stuttgart",
+            "straße_hausnummer": "Gymnasiumstraße 21",
+            "plz_ort": "70173 Stuttgart",
             "land": "Musterland"
         },
         {
             "adresse_id": "d3942b6-87d7-4bad-9b5a-5257e466554bj",
-            "straße_hausnummer": "Alexanderstraße_85",
-            "plz_ort": "70182_Stuttgart",
+            "straße_hausnummer": "Eberhardstraße 35",
+            "plz_ort": "70173 Stuttgart",
             "land": "The Länd"
         }
     ]
