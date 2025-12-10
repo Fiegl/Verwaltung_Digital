@@ -356,6 +356,8 @@ def personenstandsregister_api(request):
             "beruf": None,                                      #holen wir von "Arbeit&Bildung"
             "passwort": passwort,
         }
+        
+        #erweitern um Immigration
 
         daten = lade_personenstandsregister()
         daten.append(erstelle_neuen_eintrag)
