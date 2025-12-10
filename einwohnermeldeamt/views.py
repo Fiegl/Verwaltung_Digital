@@ -337,7 +337,6 @@ def personenstandsregister_api(request):
         vorname = request.POST.get("vorname")
         nachname_geburt = request.POST.get("nachname_geburt")
         geburtsdatum = request.POST.get("geburtsdatum")
-        staatsangehoerigkeit = request.POST.get("staatsangehoerigkeit")
         passwort = erstelle_buerger_passwort()      #Korrelation zur Funktion Bürger-Passwort
 
         erstelle_neuen_eintrag = {
