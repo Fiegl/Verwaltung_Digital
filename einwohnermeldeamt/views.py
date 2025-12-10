@@ -347,7 +347,6 @@ def personenstandsregister_api(request):
             "vorname": vorname,                                 #schickt uns Gesumdheit&Soziales
             "nachname_geburt": nachname_geburt,                 #schickt uns Gesumdheit&Soziales
             "geburtsdatum": geburtsdatum,                       #schickt uns Gesumdheit&Soziales
-            "staatsangehoerigkeit": staatsangehoerigkeit,       #schickt uns Gesumdheit&Soziales
             "sterbedatum": None,                                #schickt uns Gesumdheit&Soziales (bei Todesurkunde)
             "lebensstatus": "lebend",                           #ändert sich bei Tod zu "verstorben"
             "familienstand": "ledig",
