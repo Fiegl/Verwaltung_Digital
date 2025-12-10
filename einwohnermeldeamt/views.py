@@ -417,10 +417,6 @@ def erstelle_buerger_passwort():                            # Anleitung: https:/
     return ''.join(secrets.choice(alphabet) for i in range(5))
 
 
-### mehrere API's bereitstellen ohne UI fpr alle Ressorts, API (z.B. Suche Vorname + Nachname eine Liste zurückgeben oder anstatt der ID)
-### 
-
-
 
 #Session-ID JWT
 
