@@ -40,6 +40,10 @@ def test(request):
 
 
 def mainpage(request):
+    
+    if not request.session.get("user_id"):
+        return redirect("login")
+
     return render(request, "einwohnermeldeamt/mainpage.html")
 
 def login(request):
@@ -105,6 +109,9 @@ def speichere_wohnsitzregister(daten):
 
 @csrf_exempt
 def buerger_services(request):
+    
+    if not request.session.get("user_id"):
+        return redirect("login")
 
     # Adressen für das Formular laden
     daten_adressen = lade_adressenregister()
@@ -415,10 +422,6 @@ def personenstandsregister_api(request):
 def erstelle_buerger_passwort():                            # Anleitung: https://docs.python.org/3/library/secrets.html#secrets.choice
     alphabet = string.ascii_letters + string.digits
     return ''.join(secrets.choice(alphabet) for i in range(5))
-
-
-### mehrere API's bereitstellen ohne UI fpr alle Ressorts, API (z.B. Suche Vorname + Nachname eine Liste zurückgeben oder anstatt der ID)
-### 
 
 
 
