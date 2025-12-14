@@ -483,11 +483,11 @@ TARGET_URL = "http://[2001:7c0:2320:2:f816:3eff:feb6:6731]:8000" #Zieladresse vo
 
 
 def weiterleiten(request):                                  #umschreiben, dass es auf das Personenstandsregister verweist
-    user_id = request.session.get("user_id")
-    if not user_id:
+    buerger_id = request.session.get("user_id")
+    if not buerger_id:
         return HttpResponse("Nicht eingeloggt!", status=401)
 
-    token = create_jwt(user_id)
+    token = create_jwt(buerger_id)
 
     redirect_url = f"{TARGET_URL}/jwt-login?token={quote(token)}"    #hier auch nochmal anpassen so wie ihr die URL nennen wollt!
     return redirect(redirect_url) #Token
@@ -505,12 +505,12 @@ def jwt_login(request):
     except Exception:
         return HttpResponse("Ungültiges oder abgelaufenes Token.", status=401)
 
-    user_id = daten.get("user_id")
-    if not user_id:
+    buerger_id = daten.get("user_id")
+    if not buerger_id:
         return HttpResponse("Token enthält keine user_id.", status=400)
 
     # Session auf Server B setzen
-    request.session["user_id"] = user_id
+    request.session["user_id"] = buerger_id
 
     # Weiter ins Dashboard
     return redirect("mainpage") #hier anpassen, weiterleiten auf die Zielseite
