@@ -479,22 +479,10 @@ def erstelle_buerger_passwort():                            # Anleitung: https:/
 ##Session-ID versenden
 
 TARGET_URL = "http://[2001:7c0:2320:2:f816:3eff:feb6:6731]:8000" #Zieladresse von Ressort "Arbeit & Bildung"
+#Target URLS so setzen, dass es für alle Kacheln auf der mainpage verweist
 
 
-def fake_login(request):
-    request.session["user_id"] = 42
-    return HttpResponse("Fake-Login: user_id=42 wurde in die Session geschrieben.")
-
-
-
-def session_info(request):
-    user_id = request.session.get("user_id")
-    if not user_id:
-        return HttpResponse("Keine user_id in der Session.")
-    return HttpResponse(f"Session user_id: {user_id}")
-
-
-def weiterleiten(request):
+def weiterleiten(request):                                  #umschreiben, dass es auf das Personenstandsregister verweist
     user_id = request.session.get("user_id")
     if not user_id:
         return HttpResponse("Nicht eingeloggt!", status=401)
