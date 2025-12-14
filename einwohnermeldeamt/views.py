@@ -6,6 +6,7 @@ import datetime as date
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt 
+from django.views.decorators.http import require_GET
 from fpdf import FPDF #PDF Modul importieren bezüglich Generierung PFD "Meldebestätigung", ansonsten pandas
 
 from urllib.parse import quote  #für Session ID
@@ -342,7 +343,6 @@ def standesamt(request):
 
 #API zwischen Personenstands-Register und Ressort Gesundheit&Soziales
 
-
 @csrf_exempt                                        #CSRF-Token nur bei POST, PUT und DELETE, nicht bei GET notwendig
 def personenstandsregister_api(request):            
 
@@ -365,11 +365,11 @@ def personenstandsregister_api(request):
             "familienstand": "ledig",
             "haft_status": False,                               #Status True oder False (bei Haft-Entlassung) sendet uns Recht&Ordnung
             "steuer_id": None,
-            "beruf": None,                                      #holen wir von "Arbeit&Bildung"
             "passwort": passwort,
+            "adresse": None
         }
-        
         #erweitern um Immigration
+        
 
         daten = lade_personenstandsregister()
         daten.append(erstelle_neuen_eintrag)
@@ -385,36 +385,85 @@ def personenstandsregister_api(request):
             "nachname": erstelle_neuen_eintrag["nachname_geburt"],
         }  
             
-        meldung_data = requests.post(url_steuern_bank, data = meldung_data)
+        meldung_data = requests.post(url_steuern_bank, data = meldung_data, timeout=5)
 
-        #API an "Beruf&Ausbildung"
-        
-        url_arbeit_bildung = "http://[2001:7c0:2320:2:f816:3eff:feb6:6731]:8000/"
-
-        meldung_arbeit_bildung = {
-            "buerger_id": erstelle_neuen_eintrag["buerger_id"],
-            "vorname": erstelle_neuen_eintrag["vorname"],
-            "nachname": erstelle_neuen_eintrag["nachname_geburt"],
-        }
-        requests.post(url_arbeit_bildung, json=meldung_arbeit_bildung)
-        
-        
-        #API an "Ressort Recht&Ordnung"
-        
-        url_recht_ordnung = "http://[2001:7c0:2320:2:f816:3eff:fe79:999d]/ro"
-        
-        meldung_recht_ordnung = {
-            "buerger_id": erstelle_neuen_eintrag["buerger_id"],
-            "vorname": erstelle_neuen_eintrag["vorname"],
-            "nachname": erstelle_neuen_eintrag["nachname_geburt"],
-        }
-        requests.post(url_recht_ordnung, json=meldung_recht_ordnung)
-        
-        #funktion erweitern, dass Recht&Ordnung vorname, nachnname und geburtsdatum sendet (also JSON), dass wir die buerger_id zurückgeben
 
         return HttpResponse(erstelle_neuen_eintrag["buerger_id"])  # generierte buerger_id als HTTP zurückgeben an Gesundheit&Soziales (PDF als Geburtsurkunde)
 
-    return HttpResponse("Nur POST erlaubt", status=405)
+    return HttpResponse("Bürger im Personenstandsregister eingetragen", status=405)
+
+
+@csrf_exempt
+def personenstandsregister_tod_api(request):
+    if request.method != "POST":
+        return JsonResponse({"detail": "Nur POST erlaubt"}, status=405)
+
+    # JSON einlesen
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+    except json.JSONDecodeError:
+        return JsonResponse({"detail": "Ungültiges JSON"}, status=400)
+
+    buerger_id = data.get("buerger_id")
+    sterbedatum = data.get("sterbedatum")
+
+    if not buerger_id or not sterbedatum:
+        return JsonResponse(
+            {"detail": "buerger_id und sterbedatum sind erforderlich"},
+            status=400
+        )
+
+    daten = lade_personenstandsregister()
+    gefunden = False
+
+    for person in daten:
+        if person.get("buerger_id") == buerger_id:
+            person["lebensstatus"] = "verstorben"
+            person["sterbedatum"] = sterbedatum
+            gefunden = True
+            break
+
+    if not gefunden:
+        return JsonResponse({"detail": "Bürger nicht gefunden"}, status=404)
+
+    speichere_personenstandsregister(daten)
+
+    return JsonResponse({
+        "status": "ok",
+        "buerger_id": buerger_id,
+        "sterbedatum": sterbedatum
+    })
+
+
+#API an "Beruf&Ausbildung"
+        
+#url_arbeit_bildung = "http://[2001:7c0:2320:2:f816:3eff:feb6:6731]:8000/api/registrierung"
+
+@require_GET
+def api_abfrage_beruf_ausbildung(request):
+    personen_daten = lade_personenstandsregister()
+    wohnsitze = lade_wohnsitzregister()
+    
+    abfrage_wohnsitze = {}
+    for daten in wohnsitze:
+        abfrage_wohnsitze[daten["buerger_id"]] = {
+            "straße_hausnummer": daten.get("straße_hausnummer"),
+            "plz_ort": daten.get("plz_ort"),
+            }
+            
+    liste = []
+    for p in personen_daten:
+        eintrag = {
+            "buerger_id": p.get("buerger_id"),
+            "vorname": p.get("vorname"),
+            "nachname_geburt": p.get("nachname_geburt"),
+            "haft_status": p.get("haft_status"),
+            "adresse": abfrage_wohnsitze.get(p.get("buerger_id"))  # None wenn kein Wohnsitz
+        }
+        liste.append(eintrag)
+
+    return JsonResponse({"personen": liste, "anzahl": len(liste)}, status=200)
+
 
 
 #Funktion zur Generierung eines Bürger-Passwortes für den Login (Challenge) auf die Mainpage
@@ -482,136 +531,7 @@ def jwt_login(request):
 
 
 
-@csrf_exempt
-def setze_beruf(request):
-    
-    if request.method != "POST":
-        return JsonResponse({"detail": "Nur POST erlaubt."}, status=405)
-
-    # JSON oder normale Formdaten akzeptieren
-    if request.content_type and "application/json" in request.content_type:
-        try:
-            data = json.loads(request.body.decode("utf-8"))
-        except json.JSONDecodeError:
-            return JsonResponse({"detail": "Ungültiges JSON."}, status=400)
-    else:
-        data = request.POST
-
-    buerger_id = data.get("buerger_id")
-    beruf = data.get("beruf")
-
-    if not buerger_id or not beruf:
-        return JsonResponse(
-            {"detail": "buerger_id und beruf sind erforderlich."},
-            status=400
-        )
-
-    daten = lade_personenstandsregister()
-    gefunden = False
-
-    for eintrag in daten:
-        if eintrag.get("buerger_id") == buerger_id:
-            eintrag["beruf"] = beruf
-            gefunden = True
-            break
-
-    if not gefunden:
-        return JsonResponse({"detail": "Bürger nicht gefunden."}, status=404)
-
-    speichere_personenstandsregister(daten)
-
-    return JsonResponse({
-        "buerger_id": buerger_id,
-        "beruf": beruf
-    })
 
 
 
 
-
-@csrf_exempt
-def setze_haftstatus(request):
-   
-    if request.method != "POST":
-        return JsonResponse({"detail": "Nur POST erlaubt."}, status=405)
-
-    if request.content_type and "application/json" in request.content_type:
-        try:
-            data = json.loads(request.body.decode("utf-8"))
-        except json.JSONDecodeError:
-            return JsonResponse({"detail": "Ungültiges JSON."}, status=400)
-    else:
-        data = request.POST
-
-    buerger_id = data.get("buerger_id")
-    haft_status = data.get("haft_status", "inhaftiert")
-
-    if not buerger_id:
-        return JsonResponse(
-            {"detail": "buerger_id ist erforderlich."},
-            status=400
-        )
-
-    daten = lade_personenstandsregister()
-    gefunden = False
-
-    for eintrag in daten:
-        if eintrag.get("buerger_id") == buerger_id:
-            eintrag["haft_status"] = haft_status
-            gefunden = True
-            break
-
-    if not gefunden:
-        return JsonResponse({"detail": "Bürger nicht gefunden."}, status=404)
-
-    speichere_personenstandsregister(daten)
-
-    return JsonResponse({
-        "buerger_id": buerger_id,
-        "haft_status": haft_status
-    })
-
-
-
-
-
-
-
-
-
-
-#Code für die anderen Ressorts
-
-#Arbeit&Bildung
-
-#import requests
-
-#payload = {
-    #"buerger_id": buerger_id,
-    #"beruf": "Polizist"
-#}
-#requests.post("http://[EURE-IP]:8000/api/buerger/beruf", json=payload)
-
-
-#Recht&Ordnung
-
-#import requests
-
-#payload = {
-    #"buerger_id": buerger_id,
-    #"haft_status": "inhaftiert"
-#}
-#requests.post("http://[EURE-IP]:8000/api/buerger/haftstatus", json=payload)
-
-
-
-# Arbeit & Bildung
-#requests.post("http://[EURE-IP]:8000/api/buerger/beruf", json={
-    #"buerger_id": "...",
-    #"beruf": "Polizist",
-#})
-
-#requests.post("http://[EURE-IP]:8000/api/buerger/haftstatus", json={
-    #"buerger_id": "...",
-    #"haft_status": "inhaftiert",
-#})
