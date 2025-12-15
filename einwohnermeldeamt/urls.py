@@ -17,6 +17,9 @@ urlpatterns = [
     
     path("api/abfrage/beruf_ausbildung", views.api_abfrage_beruf_ausbildung, name="api_abfrage_beruf_ausbildung"),
     
+    path("api/recht-ordnung/personensuche", views.personensuche_api, name="personensuche_api"),
+    path("api/recht-ordnung/haftstatus", views.api_setze_haftstatus, name="api_setze_haftstatus"),
+    
     
     path("sessiontest/login/", views.fake_login),
     path("sessiontest/info/", views.session_info),

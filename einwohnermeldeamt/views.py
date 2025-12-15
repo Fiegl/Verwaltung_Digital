@@ -6,7 +6,7 @@ import datetime as date
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt 
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_POST
 from fpdf import FPDF #PDF Modul importieren bezüglich Generierung PFD "Meldebestätigung", ansonsten pandas
 
 from urllib.parse import quote  #für Session ID
@@ -463,6 +463,67 @@ def api_abfrage_beruf_ausbildung(request):
         liste.append(eintrag)
 
     return JsonResponse({"personen": liste, "anzahl": len(liste)}, status=200)
+
+
+#API's Ressort "Recht&Ordnung"
+
+@csrf_exempt
+@require_POST
+def personensuche_api(request):
+    body = json.loads(request.body.decode("utf-8"))
+
+    vorname = body["vorname"]
+    nachname = body["nachname"]
+    geburtsdatum = body["geburtsdatum"]
+
+    daten = lade_personenstandsregister()
+
+    for person in daten:
+        if (
+            person.get("vorname") == vorname and
+            person.get("nachname_geburt") == nachname and
+            person.get("geburtsdatum") == geburtsdatum
+        ):
+            return JsonResponse(
+                {"buerger_id": person.get("buerger_id")},
+                status=200
+            )
+
+    return JsonResponse(
+        {"error": "keine_person_gefunden"},
+        status=404
+    )
+
+
+@csrf_exempt
+@require_POST
+def api_setze_haftstatus(request):
+    body = json.loads(request.body.decode("utf-8"))
+
+    buerger_id = body["buerger_id"]
+    haft_status = body["haft_status"]
+
+    daten = lade_personenstandsregister()
+
+    for person in daten:
+        if person.get("buerger_id") == buerger_id:
+            person["haft_status"] = haft_status
+            speichere_personenstandsregister(daten)
+
+            return JsonResponse(
+                {
+                    "status": "ok",
+                    "buerger_id": buerger_id,
+                    "haft_status": haft_status
+                },
+                status=200
+            )
+
+    return JsonResponse(
+        {"error": "keine_person_gefunden"},
+        status=404
+    )
+
 
 
 
