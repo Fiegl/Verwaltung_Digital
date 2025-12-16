@@ -229,13 +229,7 @@ def buerger_services(request):
                 "error": "Eine oder beide Bürger-IDs wurden nicht gefunden."
             })
 
-        if b_id_1 == b_id_2:
-            return render(request, "einwohnermeldeamt/buerger_services.html", {
-                "adressen": adressen,
-                "error": "Die beiden Bürger-IDs dürfen nicht gleich sein."
-        })
-        
-        neuerNachname = person1.get("nachname") or person1.get("nachname_neu") or person1.get("familienname")
+        neuerNachname = person1.get("nachname_geburt")
 
         person1["familienstand"] = "verheiratet"
         person1["ehepartner_id"] = b_id_2
@@ -260,7 +254,6 @@ def buerger_services(request):
             pass
 
         #ab hier erzeugen wir als PFD die Heiratsurkunde                #XHTML benutzen statt fPDF
-
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("helvetica", style="B", size=16)
@@ -269,9 +262,9 @@ def buerger_services(request):
 
         pdf.set_font("helvetica", size=12)
 
-        # Namen mit Geburtsname & neuem Familiennamen
-        name1_geburtsname = f"{person1.get('vorname', '')} {person1.get('nachname_geburt', '')}"
+        name1 = f"{person1.get('vorname', '')} {person1.get('nachname_geburt', '')}"
         name2_geburtsname = f"{person2.get('vorname', '')} {person2.get('nachname_geburt', '')}"
+        name2_neu = f"{person2.get('vorname', '')} {neuerNachname}"
 
         urkundennummer = str(uuid.uuid4())
 
@@ -279,11 +272,11 @@ def buerger_services(request):
             f"Urkundennummer: {urkundennummer}",
             "",
             f"Am {datum_ehe} wurde die Ehe geschlossen zwischen",
-            f"{name1_geburtsname}",
+            f"{name1}",
             "und",
             f"{name2_geburtsname}.",
             "",
-            "Beide führen ab Eheschließung den gemeinsamen Familiennamen:",
+            f"Die Person mit der Bürger-ID {b_id_2} führt ab Eheschließung den Familiennamen:",
             f"{neuerNachname}",
             "",
             f"Eintrag im Personenstandsregister vom {datum_heute}.",
@@ -294,7 +287,7 @@ def buerger_services(request):
 
         pdf_hochzeit = pdf.output(dest="S").encode("latin-1")
         response = HttpResponse(pdf_hochzeit, content_type="application/pdf")
-        response["Content-Disposition"] = 'inline; filename=\"heiratsurkunde.pdf\"'
+        response["Content-Disposition"] = 'inline; filename="heiratsurkunde.pdf\"'
         return response
 
 #Funktion nicht in Benutzung
