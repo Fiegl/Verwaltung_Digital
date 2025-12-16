@@ -24,7 +24,7 @@ wohnsitzregister = "/var/www/django-project/datenbank/wohnsitzregister.json"
 adressenregister = "/var/www/django-project/datenbank/adressenregister.json"
 
 
-#Templates zum Testen
+
 def test_api(request):
     return render(request, "einwohnermeldeamt/test_api.html")
 
@@ -37,6 +37,15 @@ def test_api_setze_haftstatus(request):
 def test(request):
     return render(request, "einwohnermeldeamt/test.html")
 
+
+
+
+def mainpage(request):
+    
+    if not request.session.get("user_id"):
+        return redirect("login")
+
+    return render(request, "einwohnermeldeamt/mainpage.html")
 
 def login(request):
     if request.method == "POST":
@@ -56,15 +65,7 @@ def login(request):
 
     return render(request, "einwohnermeldeamt/login.html")
 
-def logout(request):
-    request.session.flush()
-    return redirect("login")
 
-def mainpage(request):
-    if not request.session.get("user_id"):
-        return redirect("login")
-
-    return render(request, "einwohnermeldeamt/mainpage.html")
 
 #Hier zwei Hilfs-Funktionen, für das Aufrufen und Persistieren von Daten im Personenstandsregister
 
@@ -80,7 +81,6 @@ def speichere_personenstandsregister(daten):
         json.dump(daten, datei, ensure_ascii=False, indent=2)
         
 
-
 #Hier eine Hilfs-Funktion, für das Aufrufen und Persistieren von Daten im Adressenregister
 
 
@@ -91,8 +91,8 @@ def lade_adressenregister():
     except:
         return {"adressenregister": []}
 
-#Hier zwei Hilfs-Funktionen, für das Aufrufen und Persistieren von Daten im Wohnsitzregister
 
+#Hier zwei Hilfs-Funktionen, für das Aufrufen und Persistieren von Daten im Wohnsitzregister
 
 def lade_wohnsitzregister():
     try:
@@ -171,6 +171,7 @@ def buerger_services(request):
         wohnsitz_daten.append(neuer_eintrag)
         speichere_wohnsitzregister(wohnsitz_daten)
 
+        # PDF bauen (dein bisheriger Code)                          #XHTML benutzen statt fPDF
         datum_heute = date.date.today().strftime("%d.%m.%Y")
 
         #ab hier erzeugen wir mit dem Modul fPDF die jeweilige PDF für den Bürger, Anleitung: https://py-pdf.github.io/fpdf2/Tutorial-de.html#pdfa-standards
@@ -197,8 +198,8 @@ def buerger_services(request):
         for zeile in textzeilen:
             pdf.cell(0, 8, zeile, ln=True)
 
-        pdf_meldebestätigung = pdf.output(dest="S").encode("latin-1")
-        response = HttpResponse(pdf_meldebestätigung, content_type="application/pdf")
+        erstelltes_pdf = pdf.output(dest="S").encode("latin-1")
+        response = HttpResponse(erstelltes_pdf, content_type="application/pdf")
         response["Content-Disposition"] = 'inline; filename="meldebestaetigung.pdf"'
         return response
 
@@ -224,7 +225,13 @@ def buerger_services(request):
                 "error": "Eine oder beide Bürger-IDs wurden nicht gefunden."
             })
 
-        neuerNachname = person1.get("nachname")
+        if b_id_1 == b_id_2:
+            return render(request, "einwohnermeldeamt/buerger_services.html", {
+                "adressen": adressen,
+                "error": "Die beiden Bürger-IDs dürfen nicht gleich sein."
+        })
+        
+        neuerNachname = person1.get("nachname") or person1.get("nachname_neu") or person1.get("familienname")
 
         person1["familienstand"] = "verheiratet"
         person1["ehepartner_id"] = b_id_2
@@ -249,6 +256,7 @@ def buerger_services(request):
             pass
 
         #ab hier erzeugen wir als PFD die Heiratsurkunde                #XHTML benutzen statt fPDF
+
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("helvetica", style="B", size=16)
@@ -257,9 +265,9 @@ def buerger_services(request):
 
         pdf.set_font("helvetica", size=12)
 
-        name1 = f"{person1.get('vorname', '')} {person1.get('nachname_geburt', '')}"
+        # Namen mit Geburtsname & neuem Familiennamen
+        name1_geburtsname = f"{person1.get('vorname', '')} {person1.get('nachname_geburt', '')}"
         name2_geburtsname = f"{person2.get('vorname', '')} {person2.get('nachname_geburt', '')}"
-        name2_neu = f"{person2.get('vorname', '')} {neuerNachname}"
 
         urkundennummer = str(uuid.uuid4())
 
@@ -267,11 +275,11 @@ def buerger_services(request):
             f"Urkundennummer: {urkundennummer}",
             "",
             f"Am {datum_ehe} wurde die Ehe geschlossen zwischen",
-            f"{name1}",
+            f"{name1_geburtsname}",
             "und",
             f"{name2_geburtsname}.",
             "",
-            f"Die Person mit der Bürger-ID {b_id_2} führt ab Eheschließung den Familiennamen:",
+            "Beide führen ab Eheschließung den gemeinsamen Familiennamen:",
             f"{neuerNachname}",
             "",
             f"Eintrag im Personenstandsregister vom {datum_heute}.",
@@ -282,7 +290,7 @@ def buerger_services(request):
 
         pdf_hochzeit = pdf.output(dest="S").encode("latin-1")
         response = HttpResponse(pdf_hochzeit, content_type="application/pdf")
-        response["Content-Disposition"] = 'inline; filename="heiratsurkunde.pdf\"'
+        response["Content-Disposition"] = 'inline; filename=\"heiratsurkunde.pdf\"'
         return response
 
 #Funktion nicht in Benutzung
@@ -324,53 +332,16 @@ def standesamt(request):
     return render(request, "einwohnermeldeamt/standesamt.html")
 
 
-        
 
-#Funktion nicht in Benutzung
-@csrf_exempt
-def standesamt(request):
-
-    daten_personenstand = lade_personenstandsregister()
-
-    if request.method == "POST" and request.POST.get("Formular_Standesamt") == "heirat":
-        buerger_id = request.POST.get("buerger_id")
-        partner_id = request.POST.get("partner_id")
-        neuer_nachname = request.POST.get("neuer_nachname")
-
-        # Bestehende Datensätze beider Personen finden
-        person = None
-        partner = None
-
-        for eintrag in daten_personenstand:
-            if eintrag["buerger_id"] == buerger_id:
-                person = eintrag
-            if eintrag["buerger_id"] == partner_id:
-                partner = eintrag
-
-        # Wenn beide Datensätze existieren → Familienstand ändern
-        if person and partner:
-
-            # Familienstand aktualisieren
-            person["familienstand"] = "verheiratet"
-            person["ehepartner_id"] = partner_id
-            person["nachname_neu"] = neuer_nachname
-
-            partner["familienstand"] = "verheiratet"
-            partner["ehepartner_id"] = buerger_id
-            partner["nachname_neu"] = neuer_nachname
-
-            # Register speichern
-            speichere_personenstandsregister(daten_personenstand)
-
-    return render(request, "einwohnermeldeamt/standesamt.html")
-
-
-
-#API zwischen Personenstands-Register und Ressort Gesundheit&Soziales
+#Personenstandsregister muss geladen werden
+#Einträge aus Template standesamt übernehmen
+#neuer eintrag generiert werden (familienstand muss von ledig auf verheiratet geändert werden, buerger_id verheiratet muss rein ())
 
 #API_URL = "http://[2001:7c0:2320:2:f816:3eff:fef8:f5b9]:8000/einwohnermeldeamt/personenstandsregister_api"
 
 
+
+#API zwischen Personenstands-Register und Ressort Gesundheit&Soziales
 
 @csrf_exempt                                        #CSRF-Token nur bei POST, PUT und DELETE, nicht bei GET notwendig
 def personenstandsregister_api(request):            
@@ -418,7 +389,6 @@ def personenstandsregister_api(request):
 
 
         return HttpResponse(erstelle_neuen_eintrag["buerger_id"])  # generierte buerger_id als HTTP zurückgeben an Gesundheit&Soziales (PDF als Geburtsurkunde)
-
 
     return HttpResponse("Bürger im Personenstandsregister eingetragen", status=405)
 
@@ -487,9 +457,7 @@ def api_abfrage_beruf_ausbildung(request):
             "buerger_id": p.get("buerger_id"),
             "vorname": p.get("vorname"),
             "nachname_geburt": p.get("nachname_geburt"),
-            "geburtsdatum": p.get("geburtsdatum"),
             "haft_status": p.get("haft_status"),
-            "nachname_neu": p.get("nachname_neu"),
             "adresse": abfrage_wohnsitze.get(p.get("buerger_id"))  # None wenn kein Wohnsitz
         }
         liste.append(eintrag)
@@ -558,11 +526,13 @@ def api_setze_haftstatus(request):
 
 
 
-#Funktion zur Generierung eines Bürger-Passwortes für den Login (Sesion-ID (JWT-Token)) auf die Mainpage
+
+#Funktion zur Generierung eines Bürger-Passwortes für den Login (Challenge) auf die Mainpage
 
 def erstelle_buerger_passwort():                            # Anleitung: https://docs.python.org/3/library/secrets.html#secrets.choice
     alphabet = string.ascii_letters + string.digits
     return ''.join(secrets.choice(alphabet) for i in range(5))
+
 
 
 #Session-ID JWT
