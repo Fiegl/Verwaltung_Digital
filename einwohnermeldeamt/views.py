@@ -461,7 +461,9 @@ def api_abfrage_beruf_ausbildung(request):
             "buerger_id": p.get("buerger_id"),
             "vorname": p.get("vorname"),
             "nachname_geburt": p.get("nachname_geburt"),
+            "geburtsdatum": p.get("geburtsdatum"),
             "haft_status": p.get("haft_status"),
+            "nachname_neu": p.get("nachname_neu"),
             "adresse": abfrage_wohnsitze.get(p.get("buerger_id"))  # None wenn kein Wohnsitz
         }
         liste.append(eintrag)
