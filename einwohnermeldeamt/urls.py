@@ -7,6 +7,7 @@ urlpatterns = [
     path("mainpage", views.mainpage, name="mainpage"),
     path('test/', views.test, name='test'),
     path("login", views.login, name="login"),
+    path("logout", views.logout, name="logout"),
     path("standesamt", views.standesamt, name="standesamt"),
     
     path('test_api/', views.test_api, name="test_api"),
@@ -20,9 +21,6 @@ urlpatterns = [
     path("api/recht-ordnung/personensuche", views.personensuche_api, name="personensuche_api"),
     path("api/recht-ordnung/haftstatus", views.api_setze_haftstatus, name="api_setze_haftstatus"),
     
-    
-    path("sessiontest/login/", views.fake_login),
-    path("sessiontest/info/", views.session_info),
     path("weiterleiten/", views.weiterleiten),
     path("jwt-login", views.jwt_login, name="jwt_login"),
 ]
