@@ -552,7 +552,18 @@ def weiterleiten(request):                                  #umschreiben, dass e
     redirect_url = f"{TARGET_URL}/jwt-login?token={quote(token)}"    #hier auch nochmal anpassen so wie ihr die URL nennen wollt!
     return redirect(redirect_url) #Token
 
-##Session-ID empfangen
+TARGET_URL_STEUERN_BANK = "http://[2001:7c0:2320:2:f816:3eff:fe82:34b2]:8000" #Zieladresse von Ressort "Zahlungsverkehr & Steuern"
+
+def weiterleiten_steuern_bank(request):
+    buerger_id = request.session.get("user_id")
+    if not buerger_id:
+        return HttpResponse("Nicht eingeloggt!", status=401)
+
+    token = create_jwt(buerger_id)
+    redirect_url = f"{TARGET_URL_STEUERN_BANK}/jwt-login?token={quote(token)}"
+    return redirect(redirect_url)   
+
+##Session-ID erzeugen
 
 
 def jwt_login(request):

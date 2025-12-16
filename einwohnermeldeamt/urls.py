@@ -22,5 +22,7 @@ urlpatterns = [
     path("api/recht-ordnung/haftstatus", views.api_setze_haftstatus, name="api_setze_haftstatus"),
     
     path("weiterleiten/", views.weiterleiten),
+    path("weiterleiten_steuern_bank/", views.weiterleiten_steuern_bank, name="weiterleiten_steuern_bank"),
+    
     path("jwt-login", views.jwt_login, name="jwt_login"),
 ]
