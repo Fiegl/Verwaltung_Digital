@@ -31,6 +31,18 @@
                 border-color: #999;
                 transform: translateY(-3px);
             }
+
+            .logout-button {
+                position: absolute;
+                right: 20px;
+                top: 20px;
+                padding: 5px 10px;
+                border-radius: 5px;
+                border: 1px solid #999;
+                background: #f3f3f3;
+                text-decoration: none;
+                color: #333;
+            }
         </style>
     </head>
     <body>
@@ -43,6 +55,7 @@
                 <div class="usermenu_show_button">
                     <p>Max Mustermann</p>
                 </div>
+                <a href="{% url 'logout' %}" class="logout-button">Abmelden</a>
             </div>
 
             <h1>Bürgerportal Musterland</h1>
