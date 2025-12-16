@@ -66,6 +66,10 @@ def login(request):
     return render(request, "einwohnermeldeamt/login.html")
 
 
+def logout(request):
+    request.session.flush()
+    return redirect("login")
+
 
 #Hier zwei Hilfs-Funktionen, für das Aufrufen und Persistieren von Daten im Personenstandsregister
 
