@@ -37,7 +37,7 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: var(--bg); /* Heller Hintergrund – wirkt modern */   
+    background-color: var(--bg); /* Heller Hintergrund – wirkt modern */
     color: var(--font); /* Gut lesbarer Text */
 }
 
@@ -84,4 +84,214 @@ input, select {
     margin-top: 5px;
     border-radius: 6px;
     border: 1px solid #ccc;
+}
+
+.navbar {
+  position: fixed;
+  height: 100%;
+  width: 320px;
+  background: var(--navbar-bg);
+  border-radius: 10px;
+  overflow-y: auto;
+  user-select: none;
+  transition: transform .3s ease;
+  color: var(--navbar-font);
+  box-shadow: 0 4px 8px var(--shadow);
+}
+
+.navbar.hidden {
+  transform: translateX(-120%);
+}
+
+@media screen and (max-width: 768px) {
+  .navbar {
+    width: calc(100% - 20px);
+  }
+}
+
+.menu_items {
+  position: absolute;
+  left: 114px;
+  top: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 160px;
+}
+
+.menu_item {
+  position: relative;
+  padding: 12px 24px;
+  cursor: pointer;
+  font-size: 18px;
+  z-index: 2;
+  transition: transform 0.3s ease;
+  text-align: center;
+  user-select: none;
+  font-weight: bold;
+}
+
+.menu_item:hover {
+  transform: scale(1.2);
+}
+
+.highlight {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  background: var(--navbar-highlight);
+  border-radius: 10px;
+  z-index: 1;
+  transition: top 0.6s ease-in-out, height 0.6s ease-in-out;
+}
+
+
+.navbar_show_button {
+  width: fit-content;
+  cursor: pointer;
+  background-color: var(--button-bg);
+  box-shadow: 0 4px 8px var(--shadow);
+  padding: 10px;
+  border-radius: 10px;
+  user-select: none;
+  transition: background-color 0.3s;
+  position: fixed;
+  z-index: 5;
+  top: 10px;
+  display: flex;
+}
+
+.navbar_hide_button {
+  float: right;
+  margin: 10px;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 10px;
+  user-select: none;
+  transition: background-color 0.3s;
+  display: flex;
+  background-color: var(--navbar-bg);
+}
+
+.navbar_show_button img, .navbar_hide_button img {
+  width: 30px;
+  height: 30px;
+}
+
+.navbar_hide_button:hover, .navbar_show_button:hover {
+  background-color: var(--button-selected);
+  box-shadow: 0 4px 8px var(--shadow);
+}
+
+.navbar.shown + .content .navbar_show_button {
+  display: none;
+}
+
+.navbar h1 {
+  margin-top: 10px;
+  margin-left: 15px;
+  font-size: 24px;
+  white-space: nowrap;
+  font-weight: bold;
+  position: relative;
+  padding-bottom: 8px;
+  display: inline-block;
+}
+
+.navbar h1::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  bottom: 0;
+  height: 5px;
+  background-color: var(--navbar-highlight);
+  border-radius: 4px;
+}
+
+/* --- CONTENT --- */
+
+.content {
+  width: 100%;
+  transition: margin-left .3s ease, width .3s ease;
+}
+
+.navbar.shown + .content {
+  margin-left: 340px;
+  width: calc(100% - 250px);
+}
+
+@media screen and (max-width: 768px) {
+  .content {
+    width: 100%;
+  }
+
+  .navbar.shown + .content {
+    display: none;
+  }
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;   /* Platz zwischen Menü & Usernamen */
+    align-items: center;              /* zentriert vertikal */
+    padding: 10px 20px;               /* rundherum etwas Platz */
+    height: 60px;                     /* genug Platz für Text + Bild */
+    box-sizing: border-box;
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: bold;
+  margin-left: 70px;
+}
+
+.navbar.shown + .content .topbar h1 {
+  margin-left: 0;
+}
+
+@media screen and (max-width: 768px) {
+  .topbar h1 {
+    font-size: 24px;
+  }
+}
+
+.usermenu_show_button {
+  width: fit-content;
+  height: fit-content;
+  cursor: pointer;
+  background-color: var(--button-bg);
+  box-shadow: 0 4px 8px var(--shadow);
+  color: var(--button-font);
+  padding: 10px;
+  border-radius: 10px;
+  user-select: none;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  position: fixed;
+  right: 10px;
+}
+
+.usermenu_show_button:hover {
+  background-color: var(--button-selected);
+  box-shadow: 0 4px 8px var(--shadow);
+}
+
+.usermenu_show_button img {
+  width: 30px;
+  height: 30px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.usermenu_show_button p {
+  all: unset;
+  margin-left: 10px;
+  margin-right: 5px;
+  font-size: 16px;
+  font-weight: bold;
 }
