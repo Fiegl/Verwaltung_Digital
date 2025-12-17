@@ -352,7 +352,6 @@ def personenstandsregister_api(request):
 
         erstelle_neuen_eintrag = {
             "buerger_id": str(uuid.uuid4()),
-            "public_key": None,                                 #wird rausgegeben für Fachverfahren bei den anderen Ressorts
             "private_key": None,                                #niemals nach außen, bleibt im Personenstandsregister!
             "vorname": vorname,                                 #schickt uns Gesumdheit&Soziales
             "nachname_geburt": nachname_geburt,                 #schickt uns Gesumdheit&Soziales
@@ -361,7 +360,6 @@ def personenstandsregister_api(request):
             "lebensstatus": "lebend",                           #ändert sich bei Tod zu "verstorben"
             "familienstand": "ledig",
             "haft_status": False,                               #Status True oder False (bei Haft-Entlassung) sendet uns Recht&Ordnung
-            "steuer_id": None,
             "passwort": passwort,
             "adresse": None
         }
