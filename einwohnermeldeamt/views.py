@@ -112,12 +112,29 @@ def speichere_wohnsitzregister(daten):
 
 #globale API für alle Ressorts
 
+def hole_wohnsitz_fuer_buerger(buerger_id):
+    daten_wohnsitz = lade_wohnsitzregister()
+
+    for w in daten_wohnsitz:
+        if w.get("buerger_id") == buerger_id:
+            return {
+                "strasse_hausnummer": w.get("straße_hausnummer"),
+                "plz_ort": w.get("plz_ort"),
+                "land": w.get("land"),
+                "adresse_id": w.get("adresse_id"),
+                "meldungsvorgang_id": w.get("meldungsvorgang_id"),
+            }
+
+    return None
+
 @require_GET
 def api_person_daten(request, buerger_id):
     daten = lade_personenstandsregister()
 
     for p in daten:
         if p.get("buerger_id") == buerger_id:
+            wohnsitz = hole_wohnsitz_fuer_buerger(buerger_id)
+
             return JsonResponse(
                 {
                     "buerger_id": p.get("buerger_id"),
@@ -131,7 +148,7 @@ def api_person_daten(request, buerger_id):
                     "ehepartner_id": p.get("ehepartner_id"),
                     "eheschliessungsdatum": p.get("eheschliessungsdatum"),
                     "haft_status": p.get("haft_status"),
-                    "adresse": p.get("adresse"),
+                    "wohnsitz": wohnsitz,
                 },
                 status=200
             )
