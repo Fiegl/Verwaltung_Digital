@@ -13,6 +13,9 @@ urlpatterns = [
     path("test_api_setze_beruf/", views.test_api_setze_beruf, name="test_api_setze_beruf"),
     path("test_api_setze_haftstatus/", views.test_api_setze_haftstatus, name="test_api_setze_haftstatus"),
     
+    path("api/person/<str:buerger_id>", views.api_person_daten, name="api_person_daten"),
+
+    
     path("api/personenstandsregister/tod", views.personenstandsregister_tod_api, name="personenstandsregister_tod_api"),
     
     path("api/abfrage/beruf_ausbildung/<str:buerger_id>", views.api_abfrage_beruf_ausbildung_buerger, name="api_abfrage_beruf_ausbildung_buerger"),

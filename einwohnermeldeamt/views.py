@@ -110,6 +110,38 @@ def speichere_wohnsitzregister(daten):
         json.dump(daten, datei, ensure_ascii=False, indent=2)  
 
 
+#globale API für alle Ressorts
+
+@require_GET
+def api_person_daten(request, buerger_id):
+    daten = lade_personenstandsregister()
+
+    for p in daten:
+        if p.get("buerger_id") == buerger_id:
+            return JsonResponse(
+                {
+                    "buerger_id": p.get("buerger_id"),
+                    "vorname": p.get("vorname"),
+                    "nachname_geburt": p.get("nachname_geburt"),
+                    "nachname_neu": p.get("nachname_neu"),
+                    "geburtsdatum": p.get("geburtsdatum"),
+                    "sterbedatum": p.get("sterbedatum"),
+                    "lebensstatus": p.get("lebensstatus"),
+                    "familienstand": p.get("familienstand"),
+                    "ehepartner_id": p.get("ehepartner_id"),
+                    "eheschliessungsdatum": p.get("eheschliessungsdatum"),
+                    "haft_status": p.get("haft_status"),
+                    "steuer_id": p.get("steuer_id"),
+                    "adresse": p.get("adresse"),
+                },
+                status=200
+            )
+
+    return JsonResponse({"error": "keine_person_gefunden"}, status=404)
+
+
+
+
 ##Funktion zum Speichern der Einträge durch die Formulare
 
 @csrf_exempt
