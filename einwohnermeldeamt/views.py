@@ -131,7 +131,6 @@ def api_person_daten(request, buerger_id):
                     "ehepartner_id": p.get("ehepartner_id"),
                     "eheschliessungsdatum": p.get("eheschliessungsdatum"),
                     "haft_status": p.get("haft_status"),
-                    "steuer_id": p.get("steuer_id"),
                     "adresse": p.get("adresse"),
                 },
                 status=200
