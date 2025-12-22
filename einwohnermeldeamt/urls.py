@@ -8,7 +8,6 @@ urlpatterns = [
     path('test/', views.test, name='test'),
     path("login", views.login, name="login"),
     path("logout", views.logout, name="logout"),
-    path("standesamt", views.standesamt, name="standesamt"),
     
     path('test_api/', views.test_api, name="test_api"),
     path("test_api_setze_beruf/", views.test_api_setze_beruf, name="test_api_setze_beruf"),
@@ -16,13 +15,16 @@ urlpatterns = [
     
     path("api/personenstandsregister/tod", views.personenstandsregister_tod_api, name="personenstandsregister_tod_api"),
     
-    path("api/abfrage/beruf_ausbildung", views.api_abfrage_beruf_ausbildung, name="api_abfrage_beruf_ausbildung"),
+    path("api/abfrage/beruf_ausbildung/<str:buerger_id>", views.api_abfrage_beruf_ausbildung_buerger, name="api_abfrage_beruf_ausbildung_buerger"),
+
     
     path("api/recht-ordnung/personensuche", views.personensuche_api, name="personensuche_api"),
     path("api/recht-ordnung/haftstatus", views.api_setze_haftstatus, name="api_setze_haftstatus"),
     
+    
     path("weiterleiten/", views.weiterleiten),
     path("weiterleiten_steuern_bank/", views.weiterleiten_steuern_bank, name="weiterleiten_steuern_bank"),
-    
+
     path("jwt-login", views.jwt_login, name="jwt_login"),
+
 ]

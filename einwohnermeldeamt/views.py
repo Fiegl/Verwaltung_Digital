@@ -434,32 +434,52 @@ def personenstandsregister_tod_api(request):
         
 #url_arbeit_bildung = "http://[2001:7c0:2320:2:f816:3eff:feb6:6731]:8000/api/registrierung"
 
-@require_GET
-def api_abfrage_beruf_ausbildung(request):
-    personen_daten = lade_personenstandsregister()
-    wohnsitze = lade_wohnsitzregister()
-    
-    abfrage_wohnsitze = {}
-    for daten in wohnsitze:
-        abfrage_wohnsitze[daten["buerger_id"]] = {
-            "straße_hausnummer": daten.get("straße_hausnummer"),
-            "plz_ort": daten.get("plz_ort"),
-            }
-            
-    liste = []
-    for p in personen_daten:
-        eintrag = {
-            "buerger_id": p.get("buerger_id"),
-            "vorname": p.get("vorname"),
-            "nachname_geburt": p.get("nachname_geburt"),
-            "geburtsdatum": p.get("geburtsdatum"),
-            "haft_status": p.get("haft_status"),
-            "nachname_neu": p.get("nachname_neu"),
-            "adresse": abfrage_wohnsitze.get(p.get("buerger_id"))  # None wenn kein Wohnsitz
-        }
-        liste.append(eintrag)
+def hole_wohnsitz_fuer_buerger(buerger_id):
+    daten_wohnsitz = lade_wohnsitzregister()
 
-    return JsonResponse({"personen": liste, "anzahl": len(liste)}, status=200)
+    for w in daten_wohnsitz:
+        if w.get("buerger_id") == buerger_id:
+            return {
+                "strasse_hausnummer": w.get("straße_hausnummer"),
+                "plz_ort": w.get("plz_ort"),
+                "land": w.get("land"),
+            }
+
+    return None
+
+
+@require_GET
+def api_abfrage_beruf_ausbildung_buerger(request, buerger_id):
+    daten = lade_personenstandsregister()
+
+    for p in daten:
+        if p.get("buerger_id") == buerger_id:
+            wohnsitz = hole_wohnsitz_fuer_buerger(buerger_id)
+
+            eintrag = {
+                "buerger_id": p.get("buerger_id"),
+                "vorname": p.get("vorname"),
+                "nachname_geburt": p.get("nachname_geburt"),
+                "geburtsdatum": p.get("geburtsdatum"),
+                "haft_status": p.get("haft_status"),
+                "nachname_neu": p.get("nachname_neu"),
+                "wohnsitz": wohnsitz,
+            }
+
+            return JsonResponse(eintrag, status=200)
+
+    return JsonResponse({"error": "keine_person_gefunden"}, status=404)
+
+#curl -g \
+#"http://[2001:7c0:2320:2:f816:3eff:fef8:f5b9]:8000/einwohnermeldeamt/api/abfrage/beruf_ausbildung/cf26278b-5548-4683-b791-8ece8e909e3f"
+
+#http://[2001:7c0:2320:2:f816:3eff:fef8:f5b9]:8000/einwohnermeldeamt/api/abfrage/beruf_ausbildung/cf26278b-5548-4683-b791-8ece8e909e3f
+
+
+#/einwohnermeldeamt/api/abfrage/beruf_ausbildung/<BUERGER_ID>
+
+
+
 
 
 #API's Ressort "Recht&Ordnung"
@@ -467,7 +487,10 @@ def api_abfrage_beruf_ausbildung(request):
 @csrf_exempt
 @require_POST
 def personensuche_api(request):
-    body = json.loads(request.body.decode("utf-8"))
+    try:
+        body = json.loads(request.body.decode("utf-8"))
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "ungueltiges_json"}, status=400)
 
     vorname = body["vorname"]
     nachname = body["nachname"]
@@ -481,21 +504,19 @@ def personensuche_api(request):
             person.get("nachname_geburt") == nachname and
             person.get("geburtsdatum") == geburtsdatum
         ):
-            return JsonResponse(
-                {"buerger_id": person.get("buerger_id")},
-                status=200
-            )
+            return JsonResponse({"buerger_id": person.get("buerger_id")}, status=200)
 
-    return JsonResponse(
-        {"error": "keine_person_gefunden"},
-        status=404
-    )
+    return JsonResponse({"error": "keine_person_gefunden"}, status=404)
+
 
 
 @csrf_exempt
 @require_POST
 def api_setze_haftstatus(request):
-    body = json.loads(request.body.decode("utf-8"))
+    try:
+        body = json.loads(request.body.decode("utf-8"))
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "ungueltiges_json"}, status=400)
 
     buerger_id = body["buerger_id"]
     haft_status = body["haft_status"]
@@ -506,20 +527,9 @@ def api_setze_haftstatus(request):
         if person.get("buerger_id") == buerger_id:
             person["haft_status"] = haft_status
             speichere_personenstandsregister(daten)
+            return JsonResponse({"status": "ok", "buerger_id": buerger_id, "haft_status": haft_status}, status=200)
 
-            return JsonResponse(
-                {
-                    "status": "ok",
-                    "buerger_id": buerger_id,
-                    "haft_status": haft_status
-                },
-                status=200
-            )
-
-    return JsonResponse(
-        {"error": "keine_person_gefunden"},
-        status=404
-    )
+    return JsonResponse({"error": "keine_person_gefunden"}, status=404)
 
 
 
