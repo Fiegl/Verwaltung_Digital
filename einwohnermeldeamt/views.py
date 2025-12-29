@@ -396,10 +396,32 @@ def personenstandsregister_api(request):
         vorname = request.POST.get("vorname")
         nachname_geburt = request.POST.get("nachname_geburt")
         geburtsdatum = request.POST.get("geburtsdatum")
+        vater_id = request.POST.get("vater_id") or None
+        mutter_id = request.POST.get("mutter_id") or None
         passwort = erstelle_buerger_passwort()      #Korrelation zur Funktion Bürger-Passwort
 
+        daten = lade_personenstandsregister()       #hier laden wir das Register, um nach bereits vorhandenen Eltern zu suchen
+        
+        vater_person = None
+        mutter_person = None
+        
+        if vater_id and mutter_id:
+            uuid.UUID(vater_id)
+            uuid.UUID(mutter_id)
+            
+            for person in daten:       #Eltern im Register suchen
+                if person.get("buerger_id") == vater_id:
+                    vater_person = person
+                if person.get("buerger_id") == mutter_id:
+                    mutter_person = person
+                    
+            if not vater_person or not mutter_person:
+                return JsonResponse({"error": "eltern nicht gefunden", "vater_gefunden": bool(vater_person), "mutter_gefunden": bool(mutter_person)}, status=400)
+        
+        neue_buerger_id = str(uuid.uuid4())
+        
         erstelle_neuen_eintrag = {
-            "buerger_id": str(uuid.uuid4()),
+            "buerger_id": neue_buerger_id,
             "private_key": None,                                #niemals nach außen, bleibt im Personenstandsregister!
             "vorname": vorname,                                 #schickt uns Gesumdheit&Soziales
             "nachname_geburt": nachname_geburt,                 #schickt uns Gesumdheit&Soziales
@@ -409,12 +431,19 @@ def personenstandsregister_api(request):
             "familienstand": "ledig",
             "haft_status": False,                               #Status True oder False (bei Haft-Entlassung) sendet uns Recht&Ordnung
             "passwort": passwort,
-            "adresse": None
+            "adresse": None,
+            "vater_id": vater_id,
+            "mutter_id": mutter_id,
+            "kinder_id": []
         }
         #erweitern um Immigration
         
-
-        daten = lade_personenstandsregister()
+        if vater_person and mutter_person:
+            vater_person["kinder_id"].append(neue_buerger_id)
+            mutter_person["kinder_id"].append(neue_buerger_id)
+        
+        
+        
         daten.append(erstelle_neuen_eintrag)
         speichere_personenstandsregister(daten)
 
@@ -433,7 +462,9 @@ def personenstandsregister_api(request):
 
         return HttpResponse(erstelle_neuen_eintrag["buerger_id"])  # generierte buerger_id als HTTP zurückgeben an Gesundheit&Soziales (PDF als Geburtsurkunde)
 
+
     return HttpResponse("Bürger im Personenstandsregister eingetragen", status=405)
+
 
 
 @csrf_exempt
