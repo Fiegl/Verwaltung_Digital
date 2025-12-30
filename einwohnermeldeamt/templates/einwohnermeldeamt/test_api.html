@@ -11,22 +11,30 @@
 <body>
 
     <form method="post" action="{% url 'personenstandsregister_api' %}">
-        {% csrf_token %}
-        <label>Vorname:
-            <input type="text" name="vorname">
-        </label><br>
+    {% csrf_token %}
 
-        <label>Nachname (Geburt):
-            <input type="text" name="nachname_geburt">
-        </label><br>
+    <label>Vorname:
+        <input type="text" name="vorname">
+    </label><br>
 
-        <label>Geburtsdatum:
-            <input type="text" name="geburtsdatum">
-        </label><br>
+    <label>Nachname (Geburt):
+        <input type="text" name="nachname_geburt">
+    </label><br>
 
-        <button type="submit">Absenden</button>
-    </form>
+    <label>Geburtsdatum:
+        <input type="text" name="geburtsdatum">
+    </label><br>
 
+    <label>Vater-ID (optional):
+        <input type="text" name="vater_id">
+    </label><br>
+
+    <label>Mutter-ID (optional):
+        <input type="text" name="mutter_id">
+    </label><br>
+
+    <button type="submit">Absenden</button>
+</form>
 
 </body>
 
