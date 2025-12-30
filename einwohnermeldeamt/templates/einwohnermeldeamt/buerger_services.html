@@ -33,9 +33,10 @@
             </div>
                             <!-- MENÜPUNKTE -->
             <div class="menu_items">
-                <div class="menu_item" onclick="selectItem(this)">Hauptseite</div>
-                <div class="menu_item" onclick="selectItem(this)">Dokumente</div>
-                <div class="menu_item" onclick="selectItem(this)">Persönliche Daten</div>
+                <a href="{% url 'mainpage' %}" class="menu_item">Hauptseite</a>
+                <a href="{% url 'buerger_services' %}" class="menu_item">Bürgerservices</a>
+                <a href="{% url 'dokumente' %}" class="menu_item">Dokumente</a>
+                <a href="{% url 'pers_daten' %}" class="menu_item">Persönliche Daten</a>
             </div>
                 
         </nav>
