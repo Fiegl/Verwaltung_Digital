@@ -18,7 +18,11 @@
         <div class="topbar">
                                 <!-- USER BUTTON (rechts oben) -->
             <div class="usermenu_show_button">
-                <p>Max Mustermann</p>
+                {% if user.is_authenticated %}
+                    <p>{{ user.first_name }} {{ user.last_name }}</p>
+                {% else %}
+                    <p>Gast</p>
+                {% endif %}
             </div>
             <button class="navbar_show_button" onclick="document.querySelector('.navbar').classList.remove('hidden')">Menü</button>
 
