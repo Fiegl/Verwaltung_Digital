@@ -8,13 +8,17 @@ urlpatterns = [
     path('test/', views.test, name='test'),
     path("login", views.login, name="login"),
     path("logout", views.logout, name="logout"),
+    path("dokumente/", views.dokumente, name="dokumente"),
+    path("dokumente/<str:doc_id>/download", views.download_dokument, name="download_dokument"),
+    path("persoenliche-daten/", views.pers_daten, name="pers_daten"),
+
+
     
     path('test_api/', views.test_api, name="test_api"),
     path("test_api_setze_beruf/", views.test_api_setze_beruf, name="test_api_setze_beruf"),
     path("test_api_setze_haftstatus/", views.test_api_setze_haftstatus, name="test_api_setze_haftstatus"),
     
     path("api/person/<str:buerger_id>", views.api_person_daten, name="api_person_daten"),
-
     
     path("api/personenstandsregister/tod", views.personenstandsregister_tod_api, name="personenstandsregister_tod_api"),
     
