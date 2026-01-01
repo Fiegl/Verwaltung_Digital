@@ -1,10 +1,11 @@
 import uuid
 import json
-import time
+import os
+import datetime
 import requests
 import datetime as date
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, FileResponse
 from django.views.decorators.csrf import csrf_exempt 
 from django.views.decorators.http import require_GET, require_POST
 from fpdf import FPDF #PDF Modul importieren bezüglich Generierung PFD "Meldebestätigung", ansonsten pandas
@@ -22,9 +23,12 @@ import string
 personenstandsregister = "/var/www/django-project/datenbank/personenstandsregister.json"
 wohnsitzregister = "/var/www/django-project/datenbank/wohnsitzregister.json"
 adressenregister = "/var/www/django-project/datenbank/adressenregister.json"
+dokumentenregister = "/var/www/django-project/datenbank/dokumentenregister.json"
+DOKU_BASE = "/var/www/django-project/dokumente"
 
 
 
+#Templates zum Testen
 def test_api(request):
     return render(request, "einwohnermeldeamt/test_api.html")
 
@@ -37,15 +41,6 @@ def test_api_setze_haftstatus(request):
 def test(request):
     return render(request, "einwohnermeldeamt/test.html")
 
-
-
-
-def mainpage(request):
-    
-    if not request.session.get("user_id"):
-        return redirect("login")
-
-    return render(request, "einwohnermeldeamt/mainpage.html")
 
 def login(request):
     if request.method == "POST":
@@ -65,11 +60,15 @@ def login(request):
 
     return render(request, "einwohnermeldeamt/login.html")
 
-
 def logout(request):
     request.session.flush()
     return redirect("login")
 
+def mainpage(request):
+    if not request.session.get("user_id"):
+        return redirect("login")
+
+    return render(request, "einwohnermeldeamt/mainpage.html")
 
 #Hier zwei Hilfs-Funktionen, für das Aufrufen und Persistieren von Daten im Personenstandsregister
 
@@ -85,6 +84,7 @@ def speichere_personenstandsregister(daten):
         json.dump(daten, datei, ensure_ascii=False, indent=2)
         
 
+
 #Hier eine Hilfs-Funktion, für das Aufrufen und Persistieren von Daten im Adressenregister
 
 
@@ -95,8 +95,8 @@ def lade_adressenregister():
     except:
         return {"adressenregister": []}
 
+#Hier zwei Hilfs-Funktionen für das Aufrufen und Persistieren von Daten im Wohnsitzregister
 
-#Hier zwei Hilfs-Funktionen, für das Aufrufen und Persistieren von Daten im Wohnsitzregister
 
 def lade_wohnsitzregister():
     try:
@@ -109,23 +109,115 @@ def speichere_wohnsitzregister(daten):
     with open (wohnsitzregister, "w", encoding="utf-8") as datei:
         json.dump(daten, datei, ensure_ascii=False, indent=2)  
 
+#Hier zwei Hilfsfunktionen für das Aufrufen und Speichern des Dokumenteb-Registers
+
+
+def lade_dokumentenregister():
+    try:
+        with open(dokumentenregister, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except:
+        return []
+
+def speichere_dokumentenregister(docs):
+    with open(dokumentenregister, "w", encoding="utf-8") as f:
+        json.dump(docs, f, ensure_ascii=False, indent=2)
+
+def dokument_speichern(buerger_id, typ, pdf_bytes, dateiname):
+    ordner = os.path.join(DOKU_BASE, buerger_id)
+    os.makedirs(ordner, exist_ok=True)
+
+    pfad = os.path.join(ordner, dateiname)
+    with open(pfad, "wb") as f:
+        f.write(pdf_bytes)
+
+    docs = lade_dokumentenregister()
+    doc_id = str(uuid.uuid4())
+    docs.append({
+        "doc_id": doc_id,
+        "buerger_id": buerger_id,
+        "typ": typ,
+        "dateiname": dateiname,
+        "created_at": datetime.datetime.now().isoformat()
+    })
+    speichere_dokumentenregister(docs)
+    return doc_id
+
+@require_GET
+def download_dokument(request, doc_id):
+    if not request.session.get("user_id"):
+        return redirect("login")
+
+    buerger_id = request.session.get("user_id")
+
+    docs = lade_dokumentenregister()
+    doc = None
+    for d in docs:
+        if d.get("doc_id") == doc_id and d.get("buerger_id") == buerger_id:
+            doc = d
+            break
+
+    if not doc:
+        return HttpResponse("Dokument nicht gefunden", status=404)
+
+    pfad = os.path.join(DOKU_BASE, buerger_id, doc.get("dateiname"))
+    if not os.path.exists(pfad):
+        return HttpResponse("Datei nicht gefunden", status=404)
+
+    return FileResponse(open(pfad, "rb"), as_attachment=True, filename=doc.get("dateiname"))
+
+
+@require_GET
+def pers_daten(request):
+    if not request.session.get("user_id"):
+        return redirect("login")
+
+    buerger_id = request.session.get("user_id")
+
+    daten = lade_personenstandsregister()
+    person = None
+    for p in daten:
+        if p.get("buerger_id") == buerger_id:
+            person = p
+            break
+
+    if not person:
+        return HttpResponse("Person nicht gefunden", status=404)
+
+    wohnsitz = hole_wohnsitz_fuer_buerger(buerger_id)
+
+    return render(request, "einwohnermeldeamt/pers_daten.html", {
+        "buerger_id": buerger_id,
+        "vorname": person.get("vorname"),
+        "nachname_geburt": person.get("nachname_geburt"),
+        "nachname_neu": person.get("nachname_neu"),
+        "geburtsdatum": person.get("geburtsdatum"),
+        "wohnsitz": wohnsitz,
+    })
+
+
+
+def hole_wohnsitz_fuer_buerger(buerger_id):
+    daten = lade_wohnsitzregister()
+
+    #Wenn mehrere Einträge existieren, nehmen wir den letzten, also aktuellsten.
+    letzter = None
+    for eintrag in daten:
+        if eintrag.get("buerger_id") == buerger_id:
+            letzter = eintrag
+
+    if not letzter:
+        return None
+
+    return {
+        "straße_hausnummer": letzter.get("straße_hausnummer"),
+        "plz_ort": letzter.get("plz_ort"),
+        "land": letzter.get("land"),
+    }
+
 
 #globale API für alle Ressorts
 
-def hole_wohnsitz_fuer_buerger(buerger_id):
-    daten_wohnsitz = lade_wohnsitzregister()
-
-    for w in daten_wohnsitz:
-        if w.get("buerger_id") == buerger_id:
-            return {
-                "strasse_hausnummer": w.get("straße_hausnummer"),
-                "plz_ort": w.get("plz_ort"),
-                "land": w.get("land"),
-                "adresse_id": w.get("adresse_id"),
-                "meldungsvorgang_id": w.get("meldungsvorgang_id"),
-            }
-
-    return None
 
 @require_GET
 def api_person_daten(request, buerger_id):
@@ -154,7 +246,6 @@ def api_person_daten(request, buerger_id):
             )
 
     return JsonResponse({"error": "keine_person_gefunden"}, status=404)
-
 
 
 
@@ -223,7 +314,6 @@ def buerger_services(request):
         wohnsitz_daten.append(neuer_eintrag)
         speichere_wohnsitzregister(wohnsitz_daten)
 
-        # PDF bauen (dein bisheriger Code)                          #XHTML benutzen statt fPDF
         datum_heute = date.date.today().strftime("%d.%m.%Y")
 
         #ab hier erzeugen wir mit dem Modul fPDF die jeweilige PDF für den Bürger, Anleitung: https://py-pdf.github.io/fpdf2/Tutorial-de.html#pdfa-standards
@@ -250,8 +340,10 @@ def buerger_services(request):
         for zeile in textzeilen:
             pdf.cell(0, 8, zeile, ln=True)
 
-        erstelltes_pdf = pdf.output(dest="S").encode("latin-1")
-        response = HttpResponse(erstelltes_pdf, content_type="application/pdf")
+        pdf_meldebestätigung = pdf.output(dest="S").encode("latin-1")
+        dateiname = f"meldebestaetigung_{date.date.today().isoformat()}_{neuer_eintrag['meldungsvorgang_id']}.pdf" 
+        dokument_speichern(buerger_id, "meldebestaetigung", pdf_meldebestätigung, dateiname)
+        response = HttpResponse(pdf_meldebestätigung, content_type="application/pdf")
         response["Content-Disposition"] = 'inline; filename="meldebestaetigung.pdf"'
         return response
 
@@ -334,59 +426,35 @@ def buerger_services(request):
             pdf.cell(0, 8, zeile, ln=True)
 
         pdf_hochzeit = pdf.output(dest="S").encode("latin-1")
+        dateiname = f"heiratsurkunde_{date.date.today().isoformat()}_{urkundennummer}.pdf"
+        dokument_speichern(b_id_1, "heiratsurkunde", pdf_hochzeit, dateiname)
+        dokument_speichern(b_id_2, "heiratsurkunde", pdf_hochzeit, dateiname)
+
         response = HttpResponse(pdf_hochzeit, content_type="application/pdf")
         response["Content-Disposition"] = 'inline; filename="heiratsurkunde.pdf\"'
         return response
+    
+    
+@require_GET
+def dokumente(request):
+    if not request.session.get("user_id"):
+        return redirect("login")
 
-#Funktion nicht in Benutzung
-@csrf_exempt
-def standesamt(request):
+    buerger_id = request.session.get("user_id")
+    docs = lade_dokumentenregister()
+    docs = [d for d in docs if d.get("buerger_id") == buerger_id]
+    docs = sorted(docs, key=lambda x: x.get("created_at", ""), reverse=True)
 
-    daten_personenstand = lade_personenstandsregister()
+    return render(request, "einwohnermeldeamt/dokumente.html", {"docs": docs})
 
-    if request.method == "POST" and request.POST.get("Formular_Standesamt") == "heirat":
-        buerger_id = request.POST.get("buerger_id")
-        partner_id = request.POST.get("partner_id")
-        neuer_nachname = request.POST.get("neuer_nachname")
-
-        # Bestehende Datensätze beider Personen finden
-        person = None
-        partner = None
-
-        for eintrag in daten_personenstand:
-            if eintrag["buerger_id"] == buerger_id:
-                person = eintrag
-            if eintrag["buerger_id"] == partner_id:
-                partner = eintrag
-
-        # Wenn beide Datensätze existieren → Familienstand ändern
-        if person and partner:
-
-            # Familienstand aktualisieren
-            person["familienstand"] = "verheiratet"
-            person["ehepartner_id"] = partner_id
-            person["nachname_neu"] = neuer_nachname
-
-            partner["familienstand"] = "verheiratet"
-            partner["ehepartner_id"] = buerger_id
-            partner["nachname_neu"] = neuer_nachname
-
-            # Register speichern
-            speichere_personenstandsregister(daten_personenstand)
-
-    return render(request, "einwohnermeldeamt/standesamt.html")
-
-
-
-#Personenstandsregister muss geladen werden
-#Einträge aus Template standesamt übernehmen
-#neuer eintrag generiert werden (familienstand muss von ledig auf verheiratet geändert werden, buerger_id verheiratet muss rein ())
-
-#API_URL = "http://[2001:7c0:2320:2:f816:3eff:fef8:f5b9]:8000/einwohnermeldeamt/personenstandsregister_api"
 
 
 
 #API zwischen Personenstands-Register und Ressort Gesundheit&Soziales
+
+#API_URL = "http://[2001:7c0:2320:2:f816:3eff:fef8:f5b9]:8000/einwohnermeldeamt/personenstandsregister_api"
+
+
 
 @csrf_exempt                                        #CSRF-Token nur bei POST, PUT und DELETE, nicht bei GET notwendig
 def personenstandsregister_api(request):            
@@ -466,7 +534,6 @@ def personenstandsregister_api(request):
     return HttpResponse("Bürger im Personenstandsregister eingetragen", status=405)
 
 
-
 @csrf_exempt
 def personenstandsregister_tod_api(request):
     if request.method != "POST":
@@ -513,20 +580,6 @@ def personenstandsregister_tod_api(request):
         
 #url_arbeit_bildung = "http://[2001:7c0:2320:2:f816:3eff:feb6:6731]:8000/api/registrierung"
 
-def hole_wohnsitz_fuer_buerger(buerger_id):
-    daten_wohnsitz = lade_wohnsitzregister()
-
-    for w in daten_wohnsitz:
-        if w.get("buerger_id") == buerger_id:
-            return {
-                "strasse_hausnummer": w.get("straße_hausnummer"),
-                "plz_ort": w.get("plz_ort"),
-                "land": w.get("land"),
-            }
-
-    return None
-
-
 @require_GET
 def api_abfrage_beruf_ausbildung_buerger(request, buerger_id):
     daten = lade_personenstandsregister()
@@ -554,11 +607,7 @@ def api_abfrage_beruf_ausbildung_buerger(request, buerger_id):
 
 #http://[2001:7c0:2320:2:f816:3eff:fef8:f5b9]:8000/einwohnermeldeamt/api/abfrage/beruf_ausbildung/cf26278b-5548-4683-b791-8ece8e909e3f
 
-
 #/einwohnermeldeamt/api/abfrage/beruf_ausbildung/<BUERGER_ID>
-
-
-
 
 
 #API's Ressort "Recht&Ordnung"
@@ -613,11 +662,13 @@ def api_setze_haftstatus(request):
 
 
 
-#Funktion zur Generierung eines Bürger-Passwortes für den Login (Challenge) auf die Mainpage
+#Funktion zur Generierung eines Bürger-Passwortes für den Login (Sesion-ID (JWT-Token)) auf die Mainpage
 
 def erstelle_buerger_passwort():                            # Anleitung: https://docs.python.org/3/library/secrets.html#secrets.choice
     alphabet = string.ascii_letters + string.digits
     return ''.join(secrets.choice(alphabet) for i in range(5))
+
+
 
 
 
@@ -648,7 +699,8 @@ def weiterleiten_steuern_bank(request):
 
     token = create_jwt(buerger_id)
     redirect_url = f"{TARGET_URL_STEUERN_BANK}/jwt-login?token={quote(token)}"
-    return redirect(redirect_url)   
+    return redirect(redirect_url)    
+
 
 ##Session-ID erzeugen
 
