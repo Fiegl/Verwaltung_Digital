@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Bürgerportal-Haupseite</title>
+    <link rel="stylesheet" href="{% static 'styletest.css' %}">
+    <style>
+        .amt-raster {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 40px;
+        }
+
+        .amt-kachel {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            background-color: #f3f3f3;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 1.2rem;
+            color: #333;
+            border: 2px solid #ccc;
+            transition: 0.2s;
+        }
+
+        .amt-kachel:hover {
+            background-color: #e0e0e0;
+            border-color: #999;
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- PAGE CONTENT -->
+    <div class="content">
+
+        <!-- TOP BAR -->
+        <div class="topbar">
+            <div class="usermenu_show_button">
+                <p>{{ request.session.first_name }} {{ request.session.last_name }}</p>
+            </div>
+
+            <a href="{% url 'logout' %}" class="logout-button">
+                Abmelden
+            </a>
+        </div>
+
+
+
+        <h1>Bürgerportal Musterland</h1>
+        <h2>Bitte wählen Sie das zuständige Amt.</h2>
+
+        <div class="amt-raster">
+            <a href="http://[2001:7c0:2320:2:f816:3eff:fef8:f5b9]:8000/einwohnermeldeamt/buerger_services" class="amt-kachel">Amt für Meldewesen</a>
+            <a href="http://[2001:7c0:2320:2:f816:3eff:fe06:8d56]:8000/start/" class="amt-kachel">Gesundheitsamt</a>
+            <a href="http://[2001:7c0:2320:2:f816:3eff:fed4:e456]:1810/start" class="amt-kachel">Sozialamt</a>
+            <a href="http://[2001:7c0:2320:2:f816:3eff:fef8:f5b9]:8000/einwohnermeldeamt/weiterleiten" class="amt-kachel">Amt für Arbeit und Ausbildung</a>
+            <a href="http://[2001:7c0:2320:2:f816:3eff:fe79:999d]/ro/profilseite" class="amt-kachel">Amt für Recht und Ordnung</a>
+            <a href="http://[2001:7c0:2320:2:f816:3eff:fef8:f5b9]:8000/einwohnermeldeamt/weiterleiten_steuern_bank/" class="amt-kachel">Amt für Zahlungsverkehr und Steuern</a>
+        </div>
+    </div>
+</body>
+
+</html>

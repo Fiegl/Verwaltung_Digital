@@ -1,0 +1,166 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{% static 'styletest.css' %}">
+    <title>Bürgerservices</title>
+    <style>
+        #wohnsitz-section {
+            display: none;
+        }
+
+        #standesamt-section {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- TOP BAR -->
+    <div class="topbar">
+        <!-- USER BUTTON (rechts oben) -->
+        <div class="usermenu_show_button">
+            {% if request.session.user_id %}
+                <p>{{ request.session.first_name }} {{ request.session.last_name }}</p>
+            {% else %}
+                <p>Gast</p>
+            {% endif %}
+        </div>
+
+        <button class="navbar_show_button" onclick="document.querySelector('.navbar').classList.remove('hidden')">
+            Menü
+        </button>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar hidden">
+        <div class="navbar_hide_button" onclick="hideNavbar()">
+            <span class="close-icon"></span>
+            <h3>Menü</h3>
+        </div>
+
+        <div class="menu_items">
+            <a href="{% url 'mainpage' %}" class="menu_item">Hauptseite</a>
+            <a href="{% url 'buerger_services' %}" class="menu_item">Bürgerservices</a>
+            <a href="{% url 'dokumente' %}" class="menu_item">Dokumente</a>
+            <a href="{% url 'pers_daten' %}" class="menu_item">Persönliche Daten</a>
+        </div>
+    </nav>
+
+    <h1>Bürgerservices</h1>
+
+    <form method="POST" action="{% url 'buerger_services' %}">
+        {% csrf_token %}
+
+        <label for="Formulare_Meldeamt">Formulare Meldeamt</label>
+        <select id="Formulare_Meldeamt" name="Formulare_Meldeamt">
+            <option value="">Formular auswählen</option>
+            <option value="wohnsitz">Wohnsitz anmelden</option>
+            <option value="standesamt">Standesamt</option>
+        </select>
+
+        <!-- WOHNSITZ -->
+        <fieldset id="wohnsitz-section">
+            <legend>Wohnsitz anmelden</legend>
+
+            <label for="buerger_id">Bürger-ID:</label>
+            <input type="text" id="buerger_id" name="buerger_id" required><br>
+
+            <label for="adresse_id">Straße und Hausnummer:</label>
+            <select id="adresse_id" name="adresse_id" required>
+                <option value="">Adresse auswählen</option>
+                {% for adr in adressen %}
+                <option value="{{ adr.id }}">{{ adr.label }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit">Eingabe</button>
+        </fieldset>
+
+        <!-- STANDESAMT -->
+        <fieldset id="standesamt-section">
+            <legend>Standesamt</legend>
+
+            <label for="namensaenderung_b_id1">
+                Bürger-ID (Person, bei der der Nachname nicht geändert wird)
+            </label>
+            <input type="text" id="namensaenderung_b_id1" name="b_id_1" required><br>
+
+            <label for="namensaenderung_b_id2">
+                Bürger-ID (Person, bei der der Nachname geändert wird)
+            </label>
+            <input type="text" id="namensaenderung_b_id2" name="b_id_2" required><br>
+
+            <label for="eheschliessungsdatum">Eheschließungsdatum:</label>
+            <input type="date" id="eheschliessungsdatum" name="eheschliessungsdatum" required><br>
+
+            <button type="submit">Eingabe</button>
+        </fieldset>
+    </form>
+
+    <script>
+        function hideNavbar() {
+            document.querySelector(".navbar").classList.add("hidden");
+        }
+
+        const vorgangSelect = document.getElementById("Formulare_Meldeamt");
+
+        const wohnsitzSection = document.getElementById("wohnsitz-section");
+        const standesamtSection = document.getElementById("standesamt-section");
+
+        const buergerIdInput = document.getElementById("buerger_id");
+        const adresseSelect = document.getElementById("adresse_id");
+
+        const bId1Input = document.getElementById("namensaenderung_b_id1");
+        const bId2Input = document.getElementById("namensaenderung_b_id2");
+        const eheDatumInput = document.getElementById("eheschliessungsdatum");
+
+        function disableAll() {
+            // Wohnsitz
+            buergerIdInput.disabled = true;
+            adresseSelect.disabled = true;
+
+            // Standesamt
+            bId1Input.disabled = true;
+            bId2Input.disabled = true;
+            eheDatumInput.disabled = true;
+        }
+
+        function hideAll() {
+            wohnsitzSection.style.display = "none";
+            standesamtSection.style.display = "none";
+        }
+
+        // Initialzustand: alles aus, damit required-Felder nicht blockieren
+        disableAll();
+        hideAll();
+
+        vorgangSelect.addEventListener("change", function () {
+            const auswahl = vorgangSelect.value;
+
+            disableAll();
+            hideAll();
+
+            if (auswahl === "wohnsitz") {
+                wohnsitzSection.style.display = "block";
+                buergerIdInput.disabled = false;
+                adresseSelect.disabled = false;
+            }
+
+            if (auswahl === "standesamt") {
+                standesamtSection.style.display = "block";
+                bId1Input.disabled = false;
+                bId2Input.disabled = false;
+                eheDatumInput.disabled = false;
+            }
+        });
+    </script>
+
+    
+
+
+</body>
+
+</html>
