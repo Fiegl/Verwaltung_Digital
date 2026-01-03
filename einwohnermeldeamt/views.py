@@ -3,7 +3,7 @@ import json
 import os
 import datetime
 import requests
-import datetime as date
+from datetime import date
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse, FileResponse
 from django.views.decorators.csrf import csrf_exempt 
@@ -25,6 +25,18 @@ wohnsitzregister = "/var/www/django-project/datenbank/wohnsitzregister.json"
 adressenregister = "/var/www/django-project/datenbank/adressenregister.json"
 dokumentenregister = "/var/www/django-project/datenbank/dokumentenregister.json"
 DOKU_BASE = "/var/www/django-project/dokumente"
+
+##Wichtige Befehle, um Berechtigungen für den Zugriff auf die Register zu setzen (am Beispiel vom Dokumenten-Register):
+
+#sudo mkdir -p /var/www/django-project/dokumente
+#sudo chgrp -R www-data /var/www/django-project/dokumente /var/www/django-project/datenbank
+#sudo chmod -R 770 /var/www/django-project/dokumente
+#sudo chmod 660 /var/www/django-project/datenbank/dokumentenregister.json
+
+#sudo chgrp -R www-data /var/www/django-project/dokumente
+#sudo chmod -R 2775 /var/www/django-project/dokumente
+#sudo usermod -aG www-data ubuntu
+
 
 
 
@@ -52,23 +64,62 @@ def login(request):
         for person in daten:
             if person.get("buerger_id") == buerger_id and person.get("passwort") == passwort:
                 request.session["user_id"] = buerger_id
+
+                request.session["first_name"] = person.get("vorname") or ""
+                request.session["last_name"] = person.get("nachname_neu") or person.get("nachname_geburt") or ""
+
                 return redirect("mainpage")
 
-        return render(request, "einwohnermeldeamt/login.html", {
-            "error": "Ungültige Bürger-ID oder Passwort."
-        })
+        return render(request, "einwohnermeldeamt/login.html", {"error": "Ungültige Bürger-ID oder Passwort."})
 
     return render(request, "einwohnermeldeamt/login.html")
+
 
 def logout(request):
     request.session.flush()
     return redirect("login")
 
+def setze_session_namen(request, buerger_id: str):
+    daten = lade_personenstandsregister()
+    person = None
+    for p in daten:
+        if p.get("buerger_id") == buerger_id:
+            person = p
+            break
+
+    if person:
+        request.session["first_name"] = person.get("vorname", "")
+        request.session["last_name"] = person.get("nachname_neu") or person.get("nachname_geburt") or ""
+    else:
+        request.session["first_name"] = ""
+        request.session["last_name"] = ""
+
+
+def finde_person_by_buerger_id(buerger_id):
+    daten = lade_personenstandsregister()
+    for p in daten:
+        if p.get("buerger_id") == buerger_id:
+            return p
+    return None
+
+def display_name_for_person(p):
+    if not p:
+        return "Gast"
+    nachname = p.get("nachname_neu") or p.get("nachname_geburt") or ""
+    vorname = p.get("vorname") or ""
+    return f"{vorname} {nachname}".strip()
+
+
 def mainpage(request):
-    if not request.session.get("user_id"):
+    buerger_id = request.session.get("user_id")
+    if not buerger_id:
         return redirect("login")
 
-    return render(request, "einwohnermeldeamt/mainpage.html")
+    person = finde_person_by_buerger_id(buerger_id)
+    return render(request, "einwohnermeldeamt/mainpage.html", {
+        "display_name": display_name_for_person(person),
+    })
+
 
 #Hier zwei Hilfs-Funktionen, für das Aufrufen und Persistieren von Daten im Personenstandsregister
 
@@ -314,7 +365,7 @@ def buerger_services(request):
         wohnsitz_daten.append(neuer_eintrag)
         speichere_wohnsitzregister(wohnsitz_daten)
 
-        datum_heute = date.date.today().strftime("%d.%m.%Y")
+        datum_heute = date.today().strftime("%d.%m.%Y")
 
         #ab hier erzeugen wir mit dem Modul fPDF die jeweilige PDF für den Bürger, Anleitung: https://py-pdf.github.io/fpdf2/Tutorial-de.html#pdfa-standards
         pdf = FPDF()
@@ -341,7 +392,7 @@ def buerger_services(request):
             pdf.cell(0, 8, zeile, ln=True)
 
         pdf_meldebestätigung = pdf.output(dest="S").encode("latin-1")
-        dateiname = f"meldebestaetigung_{date.date.today().isoformat()}_{neuer_eintrag['meldungsvorgang_id']}.pdf" 
+        dateiname = f"meldebestaetigung_{date.today().isoformat()}_{neuer_eintrag['meldungsvorgang_id']}.pdf" 
         dokument_speichern(buerger_id, "meldebestaetigung", pdf_meldebestätigung, dateiname)
         response = HttpResponse(pdf_meldebestätigung, content_type="application/pdf")
         response["Content-Disposition"] = 'inline; filename="meldebestaetigung.pdf"'
@@ -383,7 +434,7 @@ def buerger_services(request):
 
         speichere_personenstandsregister(daten_personen)
 
-        datum_heute = date.date.today().strftime("%d.%m.%Y")
+        datum_heute = date.today().strftime("%d.%m.%Y")
         datum_ehe = eheschliessungsdatum
         try:
             if eheschliessungsdatum:
@@ -426,7 +477,7 @@ def buerger_services(request):
             pdf.cell(0, 8, zeile, ln=True)
 
         pdf_hochzeit = pdf.output(dest="S").encode("latin-1")
-        dateiname = f"heiratsurkunde_{date.date.today().isoformat()}_{urkundennummer}.pdf"
+        dateiname = f"heiratsurkunde_{date.today().isoformat()}_{urkundennummer}.pdf"
         dokument_speichern(b_id_1, "heiratsurkunde", pdf_hochzeit, dateiname)
         dokument_speichern(b_id_2, "heiratsurkunde", pdf_hochzeit, dateiname)
 
@@ -721,10 +772,10 @@ def jwt_login(request):
 
     # Session auf Server B setzen
     request.session["user_id"] = buerger_id
+    setze_session_namen(request, buerger_id) #diese Zeile haben wir neu gesetzt
 
     # Weiter ins Dashboard
     return redirect("mainpage") #hier anpassen, weiterleiten auf die Zielseite
-
 
 
 
