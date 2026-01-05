@@ -4,6 +4,8 @@
 
 <head>
     <meta charset="UTF-8">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
     <link rel="stylesheet" href="{% static 'styletest.css' %}">
     <title>Bürgerservices</title>
     <style>
@@ -23,9 +25,9 @@
         <!-- USER BUTTON (rechts oben) -->
         <div class="usermenu_show_button">
             {% if request.session.user_id %}
-                <p>{{ request.session.first_name }} {{ request.session.last_name }}</p>
+            <p>{{ request.session.first_name }} {{ request.session.last_name }}</p>
             {% else %}
-                <p>Gast</p>
+            <p>Gast</p>
             {% endif %}
         </div>
 
@@ -77,6 +79,10 @@
             </select>
 
             <button type="submit">Eingabe</button>
+
+            <div id="map" style="width: 100%; height: 320px; margin-top: 12px; border-radius: 12px; overflow: hidden;">
+            </div>
+
         </fieldset>
 
         <!-- STANDESAMT -->
@@ -158,7 +164,71 @@
         });
     </script>
 
-    
+    <script>
+        // --- MAPBOX SETUP ---
+        mapboxgl.accessToken = "pk.eyJ1Ijoic29sZGllcmJveSIsImEiOiJjbWsxbXVxcXcwNXgxM2lwZWRjZDZ0NnhyIn0.igcNK41Hob6HDO5iJG1rvQ";
+
+        const STUTTGART = [9.1829, 48.7758]; // [lng, lat]
+
+        let map = null;
+        let marker = null;
+
+        function ensureMapInitialized() {
+            if (map) return;
+
+            map = new mapboxgl.Map({
+                container: "map",
+                style: "mapbox://styles/mapbox/streets-v12",
+                center: STUTTGART,
+                zoom: 12
+            });
+
+            marker = new mapboxgl.Marker().setLngLat(STUTTGART).addTo(map);
+        }
+
+        async function geocodeAndFly(addressText) {
+            const query = encodeURIComponent(addressText + ", Germany");
+            const url =
+                `https://api.mapbox.com/geocoding/v5/mapbox.places/${query}.json` +
+                `?access_token=${mapboxgl.accessToken}&limit=1`;
+
+            const res = await fetch(url);
+            if (!res.ok) return;
+
+            const data = await res.json();
+            if (!data.features || data.features.length === 0) return;
+
+            const [lng, lat] = data.features[0].center;
+
+            // Falls Map initialisiert ist, aber marker noch nicht (sehr selten)
+            if (!marker) marker = new mapboxgl.Marker().setLngLat([lng, lat]).addTo(map);
+            else marker.setLngLat([lng, lat]);
+
+            map.flyTo({ center: [lng, lat], zoom: 16, essential: true });
+        }
+
+        // --- Hook: nutzt eure EXISTIERENDEN Variablen aus dem 1. Script ---
+        // (vorgangSelect und adresseSelect sind oben bereits definiert)
+
+        vorgangSelect.addEventListener("change", function () {
+            if (vorgangSelect.value === "wohnsitz") {
+                // Karte erst initialisieren, wenn das Fieldset sichtbar ist
+                setTimeout(() => {
+                    ensureMapInitialized();
+                    map.resize(); // wichtig, weil Container vorher display:none war
+                }, 0);
+            }
+        });
+
+        adresseSelect.addEventListener("change", function () {
+            const opt = adresseSelect.options[adresseSelect.selectedIndex];
+            const addressText = opt ? opt.textContent.trim() : "";
+            if (!addressText || addressText === "Adresse auswählen") return;
+
+            ensureMapInitialized();
+            geocodeAndFly(addressText);
+        });
+    </script>
 
 
 </body>
