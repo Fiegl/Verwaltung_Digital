@@ -360,7 +360,10 @@ def buerger_services(request):
             "plz_ort": bestehende_adresse["plz_ort"],
             "land": bestehende_adresse["land"],
         }
-
+        
+        person["adresse"] = adresse_id
+        speichere_personenstandsregister(daten_personen)
+        
         wohnsitz_daten = lade_wohnsitzregister()
         wohnsitz_daten.append(neuer_eintrag)
         speichere_wohnsitzregister(wohnsitz_daten)
