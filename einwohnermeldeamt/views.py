@@ -753,6 +753,17 @@ def weiterleiten_steuern_bank(request):
     return redirect(redirect_url)    
 
 
+TARGET_URL_RECHT_ORDNUNG = "http://[2001:7c0:2320:2:f816:3eff:fe79:999d]" #Zieladresse von Ressort "Recht & Ordnung
+
+def weiterleiten_recht_ordnung(request):
+    buerger_id = request.session.get("user_id")
+    if not buerger_id:
+        return HttpResponse("Nicht eingeloggt!", status=401)
+
+    token = create_jwt(buerger_id)
+    redirect_url = f"{TARGET_URL_RECHT_ORDNUNG}/ro/login?token={quote(token)}"
+    return redirect(redirect_url) 
+
 ##Session-ID erzeugen
 
 
@@ -776,7 +787,6 @@ def jwt_login(request):
 
     # Weiter ins Dashboard
     return redirect("mainpage") #hier anpassen, weiterleiten auf die Zielseite
-
 
 
 
