@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Dokumente</title>
+    <link rel="stylesheet" href="{% static 'styletest.css' %}">
+</head>
+<body>
+
+<h1>Meine Dokumente</h1>
+
+<div class="card">
+  {% if docs %}
+    <div class="table_container">
+      <table>
+        <thead>
+          <tr>
+            <th>Typ</th>
+            <th>Erstellt am</th>
+            <th>Download</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for d in docs %}
+            <tr>
+              <td>{{ d.typ }}</td>
+              <td>{{ d.created_at }}</td>
+              <td>
+                <a class="button" href="{% url 'download_dokument' d.doc_id %}"><p>Download</p></a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p>Keine Dokumente vorhanden.</p>
+  {% endif %}
+</div>
+
+
+</body>
+</html>

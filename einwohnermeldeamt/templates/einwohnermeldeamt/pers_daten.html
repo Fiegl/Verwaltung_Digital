@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Persönliche Daten</title>
+    <link rel="stylesheet" href="{% static 'styletest.css' %}">
+</head>
+<body>
+
+<h1>Persönliche Daten</h1>
+
+<div class="card">
+  <p><strong>Bürger-ID:</strong> {{ buerger_id }}</p>
+  <p><strong>Vorname:</strong> {{ vorname }}</p>
+  <p><strong>Nachname (Geburt):</strong> {{ nachname_geburt }}</p>
+
+  {% if nachname_neu %}
+    <p><strong>Nachname (neu):</strong> {{ nachname_neu }}</p>
+  {% endif %}
+
+  <p><strong>Geburtsdatum:</strong> {{ geburtsdatum }}</p>
+</div>
+
+<div class="card">
+  <div class="header"><h2>Wohnsitz</h2></div>
+
+  {% if wohnsitz %}
+    <p>{{ wohnsitz.straße_hausnummer }}</p>
+    <p>{{ wohnsitz.plz_ort }}</p>
+    <p>{{ wohnsitz.land }}</p>
+  {% else %}
+    <p><span class="warning bold">Kein Wohnsitz hinterlegt.</span></p>
+  {% endif %}
+</div>
+
+<a class="button" href="{% url 'buerger_services' %}"><p>← Zurück zu Bürgerservices</p></a>
+
+
+</body>
+</html>
