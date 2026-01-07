@@ -67,15 +67,40 @@
 
     <h1>Bürgerservices</h1>
 
+    {% if error %}
+    <p><span class="warning bold">{{ error }}</span></p>
+    {% endif %}
+
+
+    {% if request.session.role == "mitarbeiter" %}
+    <a class="button" href="{% url 'mitarbeiter_disable' %}">
+        <p>Mitarbeiter-Modus beenden</p>
+    </a>
+    {% else %}
+    <form method="POST" action="{% url 'mitarbeiter_enable' %}">
+        {% csrf_token %}
+        <label for="pin">Mitarbeiter-PIN</label>
+        <input type="password" id="pin" name="pin" required>
+        <button type="submit">Mitarbeiter-Modus aktivieren</button>
+    </form>
+    {% endif %}
+
+
     <form method="POST" action="{% url 'buerger_services' %}">
         {% csrf_token %}
 
         <label for="Formulare_Meldeamt">Formulare Meldeamt</label>
         <select id="Formulare_Meldeamt" name="Formulare_Meldeamt">
             <option value="">Formular auswählen</option>
-            <option value="wohnsitz">Wohnsitz anmelden</option>
+
+            {% if request.session.role == "mitarbeiter" and request.session.mitarbeiter_rolle == "standesamt" %}
             <option value="standesamt">Standesamt</option>
+            {% else %}
+            <option value="wohnsitz">Wohnsitz anmelden</option>
+            {% endif %}
+
         </select>
+
 
         <!-- WOHNSITZ -->
         <fieldset id="wohnsitz-section">

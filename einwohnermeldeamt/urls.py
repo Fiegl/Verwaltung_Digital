@@ -31,6 +31,13 @@ urlpatterns = [
     
     path("weiterleiten/", views.weiterleiten),
     path("weiterleiten_steuern_bank/", views.weiterleiten_steuern_bank, name="weiterleiten_steuern_bank"),
+    path("weiterleiten_recht_ordnung/", views.weiterleiten_recht_ordnung, name="weiterleiten_recht_ordnung"),
+
+    
+    path("einwohnermeldeamt/mitarbeiter/enable/", views.mitarbeiter_enable, name="mitarbeiter_enable"),
+    path("einwohnermeldeamt/mitarbeiter/disable/", views.mitarbeiter_disable, name="mitarbeiter_disable"),
+
+
 
     path("jwt-login", views.jwt_login, name="jwt_login"),
 

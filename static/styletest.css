@@ -305,3 +305,97 @@ input, select {
   font-size: 16px;
   font-weight: bold;
 }
+
+
+
+
+
+
+
+
+.logout-button {
+  background-color: var(--button-bg);
+  color: var(--button-font);
+  padding: 10px 14px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.logout-button:hover {
+  background-color: var(--button-selected);
+}
+
+/* ==== übernommen aus main_style.css (nur fehlende Klassen) ==== */
+
+.card {
+  background-color: var(--card-bg);
+  color: var(--card-font);
+  border-radius: 10px;
+  box-shadow: 0 4px 8px var(--shadow);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.table_container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+}
+
+.table_container th, td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--table-highlight);
+}
+
+.table_container tbody tr:hover {
+  background-color: var(--table-highlight);
+}
+
+.button {
+  background-color: var(--button-bg);
+  color: var(--button-font);
+  font-size: 16px;
+  padding: 10px 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px var(--shadow);
+  cursor: pointer;
+  transition: background-color 0.3s;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  user-select: none;
+  width: fit-content;
+  font-weight: bold;
+  display: flex;
+}
+
+.button:hover {
+  background-color: var(--button-selected);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+span.warning {
+  color: var(--highlight-warning);
+}
+
+span.bold {
+  font-weight: bold;
+}
+
+.hidden {
+  transform: translateX(-350px);
+  transition: transform .3s ease;
+}
+
