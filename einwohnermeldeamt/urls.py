@@ -32,6 +32,8 @@ urlpatterns = [
     path("weiterleiten/", views.weiterleiten),
     path("weiterleiten_steuern_bank/", views.weiterleiten_steuern_bank, name="weiterleiten_steuern_bank"),
     path("weiterleiten_recht_ordnung/", views.weiterleiten_recht_ordnung, name="weiterleiten_recht_ordnung"),
+    path("weiterleiten_gesundheitsamt/", views.weiterleiten_gesundheitsamt, name="weiterleiten_gesundheitsamt"),
+    path("weiterleiten_sozialamt/", views.weiterleiten_sozialamt, name="weiterleiten_sozialamt"),
 
     
     path("einwohnermeldeamt/mitarbeiter/enable/", views.mitarbeiter_enable, name="mitarbeiter_enable"),

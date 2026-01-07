@@ -546,7 +546,7 @@ def dokumente(request):
 
 
 
-#API zwischen Personenstands-Register und Ressort Gesundheit&Soziales
+#API zwischen Personenstands-Register und Ressort Gesundheit&Soziales & Steuern&Bank
 
 #API_URL = "http://[2001:7c0:2320:2:f816:3eff:fef8:f5b9]:8000/einwohnermeldeamt/personenstandsregister_api"
 
@@ -570,10 +570,14 @@ def personenstandsregister_api(request):
         mutter_person = None
         
         if vater_id and mutter_id:
-            uuid.UUID(vater_id)
-            uuid.UUID(mutter_id)
+            try:
+                uuid.UUID(vater_id)
+                uuid.UUID(mutter_id)
+            except ValueError:
+                return HttpResponse("invalid_parent_uuid", status=400, content_type="text/plain")
+
             
-            for person in daten:       #Eltern im Register suchen
+            for person in daten:       #Eltern im Personenstands-Register suchen
                 if person.get("buerger_id") == vater_id:
                     vater_person = person
                 if person.get("buerger_id") == mutter_id:
@@ -600,7 +604,7 @@ def personenstandsregister_api(request):
             "mutter_id": mutter_id,
             "kinder_id": []
         }
-        #erweitern um Immigration
+        #erweitern um Immigration (ausgesetzt)
         
         if vater_person and mutter_person:
             vater_person["kinder_id"].append(neue_buerger_id)
@@ -619,15 +623,18 @@ def personenstandsregister_api(request):
             "buerger_id": erstelle_neuen_eintrag["buerger_id"],
             "vorname": erstelle_neuen_eintrag["vorname"],
             "nachname": erstelle_neuen_eintrag["nachname_geburt"],
+            "p1": erstelle_neuen_eintrag["vater_id"],
+            "p2": erstelle_neuen_eintrag["mutter_id"],
         }  
             
         meldung_data = requests.post(url_steuern_bank, data = meldung_data, timeout=5)
 
 
-        return HttpResponse(erstelle_neuen_eintrag["buerger_id"])  # generierte buerger_id als HTTP zurückgeben an Gesundheit&Soziales (PDF als Geburtsurkunde)
+        return HttpResponse(erstelle_neuen_eintrag["buerger_id"], status=201, content_type="text/plain") # generierte buerger_id als HTTP zurückgeben an Gesundheit&Soziales (PDF als Geburtsurkunde)
 
 
-    return HttpResponse("Bürger im Personenstandsregister eingetragen", status=405)
+    return HttpResponse("method_not_allowed", status=405, content_type="text/plain")
+
 
 
 @csrf_exempt
@@ -850,6 +857,31 @@ def weiterleiten_recht_ordnung(request):
     token = create_jwt(buerger_id)
     redirect_url = f"{TARGET_URL_RECHT_ORDNUNG}/ro/jwt-login?token={quote(token)}"
     return redirect(redirect_url) 
+
+
+TARGET_URL_GESUNDHEITSAMTSAMT = "http://[2001:7c0:2320:2:f816:3eff:fe06:8d56]:8000" #Zieladresse von Teil-Ressort "Gesundheits-Amt"
+
+def weiterleiten_gesundheitsamt(request):
+    buerger_id = request.session.get("user_id")
+    if not buerger_id:
+        return HttpResponse("Nicht eingeloggt!", status=401)
+
+    token = create_jwt(buerger_id)
+    redirect_url = f"{TARGET_URL_GESUNDHEITSAMTSAMT}/jwt-login?token={quote(token)}"
+    return redirect(redirect_url) 
+
+
+TARGET_URL_SOZIALAMT = "http://[2001:7c0:2320:2:f816:3eff:fed4:e456]:1810" #Zieladresse von Teil-Ressort "Sozial-Amt"
+
+def weiterleiten_sozialamt(request):
+    buerger_id = request.session.get("user_id")
+    if not buerger_id:
+        return HttpResponse("Nicht eingeloggt!", status=401)
+
+    token = create_jwt(buerger_id)
+    redirect_url = f"{TARGET_URL_SOZIALAMT}/jwt-login?token={quote(token)}"
+    return redirect(redirect_url) 
+
 
 ##Session-ID erzeugen
 
