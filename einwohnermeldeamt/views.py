@@ -619,6 +619,8 @@ def personenstandsregister_api(request):
             "buerger_id": erstelle_neuen_eintrag["buerger_id"],
             "vorname": erstelle_neuen_eintrag["vorname"],
             "nachname": erstelle_neuen_eintrag["nachname_geburt"],
+            "p1": erstelle_neuen_eintrag["vater_id"],
+            "p2": erstelle_neuen_eintrag["mutter_id"],
         }  
             
         meldung_data = requests.post(url_steuern_bank, data = meldung_data, timeout=5)
@@ -850,6 +852,31 @@ def weiterleiten_recht_ordnung(request):
     token = create_jwt(buerger_id)
     redirect_url = f"{TARGET_URL_RECHT_ORDNUNG}/ro/jwt-login?token={quote(token)}"
     return redirect(redirect_url) 
+
+
+TARGET_URL_GESUNDHEITSAMTSAMT = "http://[2001:7c0:2320:2:f816:3eff:fe06:8d56]:8000" #Zieladresse von Teil-Ressort "Gesundheits-Amt"
+
+def weiterleiten_gesundheitsamt(request):
+    buerger_id = request.session.get("user_id")
+    if not buerger_id:
+        return HttpResponse("Nicht eingeloggt!", status=401)
+
+    token = create_jwt(buerger_id)
+    redirect_url = f"{TARGET_URL_GESUNDHEITSAMTSAMT}/jwt-login?token={quote(token)}"
+    return redirect(redirect_url) 
+
+
+TARGET_URL_SOZIALAMT = "http://[2001:7c0:2320:2:f816:3eff:fed4:e456]:1810" #Zieladresse von Teil-Ressort "Sozial-Amt"
+
+def weiterleiten_sozialamt(request):
+    buerger_id = request.session.get("user_id")
+    if not buerger_id:
+        return HttpResponse("Nicht eingeloggt!", status=401)
+
+    token = create_jwt(buerger_id)
+    redirect_url = f"{TARGET_URL_SOZIALAMT}/jwt-login?token={quote(token)}"
+    return redirect(redirect_url) 
+
 
 ##Session-ID erzeugen
 
