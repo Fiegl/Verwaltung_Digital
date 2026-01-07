@@ -42,12 +42,26 @@
             <span class="close-icon"></span>
             <h3>Menü</h3>
         </div>
-
         <div class="menu_items">
-            <a href="{% url 'mainpage' %}" class="menu_item">Hauptseite</a>
-            <a href="{% url 'buerger_services' %}" class="menu_item">Bürgerservices</a>
-            <a href="{% url 'dokumente' %}" class="menu_item">Dokumente</a>
-            <a href="{% url 'pers_daten' %}" class="menu_item">Persönliche Daten</a>
+            <a href="{% url 'mainpage' %}"
+            class="menu_item {% if request.resolver_match.url_name == 'mainpage' %}active{% endif %}">
+                Hauptseite
+            </a>
+
+            <a href="{% url 'buerger_services' %}"
+            class="menu_item {% if request.resolver_match.url_name == 'buerger_services' %}active{% endif %}">
+                Bürgerservices
+            </a>
+
+            <a href="{% url 'dokumente' %}"
+            class="menu_item {% if request.resolver_match.url_name == 'dokumente' %}active{% endif %}">
+                Dokumente
+            </a>
+
+            <a href="{% url 'pers_daten' %}"
+            class="menu_item {% if request.resolver_match.url_name == 'pers_daten' %}active{% endif %}">
+                Persönliche Daten
+            </a>
         </div>
     </nav>
 
