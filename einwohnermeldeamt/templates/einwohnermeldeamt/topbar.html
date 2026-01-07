@@ -1,0 +1,18 @@
+<html>
+    <head>
+
+    </head>
+    <body>
+        <div class="topbar">
+            <img src="{% static 'Logo.png' %}" alt="Logo" class="logo">
+            <div class="usermenu_show_button">
+                {% if user.is_authenticated %}
+                    <p>{{ user.first_name }} {{ user.last_name }}</p>
+                {% else %}
+                    <p>Gast</p>
+                {% endif %}
+            </div>
+            <button class="navbar_show_button" onclick="document.querySelector('.navbar').classList.remove('hidden')">Menü</button>
+        </div>
+    </body>
+</html>
