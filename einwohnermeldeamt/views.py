@@ -24,6 +24,7 @@ personenstandsregister = "/var/www/django-project/datenbank/personenstandsregist
 wohnsitzregister = "/var/www/django-project/datenbank/wohnsitzregister.json"
 adressenregister = "/var/www/django-project/datenbank/adressenregister.json"
 dokumentenregister = "/var/www/django-project/datenbank/dokumentenregister.json"
+mitarbeiterregister = "/var/www/django-project/datenbank/mitarbeiterregister.json"
 DOKU_BASE = "/var/www/django-project/dokumente"
 
 ##Wichtige Befehle, um Berechtigungen für den Zugriff auf die Register zu setzen (am Beispiel vom Dokumenten-Register):
@@ -36,7 +37,6 @@ DOKU_BASE = "/var/www/django-project/dokumente"
 #sudo chgrp -R www-data /var/www/django-project/dokumente
 #sudo chmod -R 2775 /var/www/django-project/dokumente
 #sudo usermod -aG www-data ubuntu
-
 
 
 
@@ -53,6 +53,24 @@ def test_api_setze_haftstatus(request):
 def test(request):
     return render(request, "einwohnermeldeamt/test.html")
 
+##Hier eine Hilfs-Funktion für das Aufrufen des Mitarbeiter-Registerts, darunter eine Funktion zum Prüfen der PIN
+
+def lade_mitarbeiterregister():
+    try:
+        with open(mitarbeiterregister, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except:
+        return []
+
+def pruefe_mitarbeiter_pin(buerger_id: str, pin: str) -> dict | None:
+    daten = lade_mitarbeiterregister()
+    for m in daten:
+        if m.get("buerger_id") == buerger_id and m.get("aktiv") is True and m.get("pin") == pin:
+            return m
+    return None
+
+
+
 
 def login(request):
     if request.method == "POST":
@@ -64,6 +82,7 @@ def login(request):
         for person in daten:
             if person.get("buerger_id") == buerger_id and person.get("passwort") == passwort:
                 request.session["user_id"] = buerger_id
+                request.session["role"] = "buerger"
 
                 request.session["first_name"] = person.get("vorname") or ""
                 request.session["last_name"] = person.get("nachname_neu") or person.get("nachname_geburt") or ""
@@ -322,14 +341,26 @@ def buerger_services(request):
 
     #Ab hier laden wir die entsprechenden Formulare
     if request.method != "POST":
+        error = request.session.pop("error", None)
         return render(request, "einwohnermeldeamt/buerger_services.html", {
-            "adressen": adressen
+            "adressen": adressen,
+            "error": error
         })
 
-    vorgang = request.POST.get("Formulare_Meldeamt")
 
-    #Formular Wohnsitz anmelden
+    vorgang = request.POST.get("Formulare_Meldeamt")
+    role = request.session.get("role", "buerger")
+
+
+    # Formular Wohnsitz anmelden
     if vorgang == "wohnsitz":
+
+        if role != "buerger":
+            return render(request, "einwohnermeldeamt/buerger_services.html", {
+                "adressen": adressen,
+                "error": "Nur Bürger dürfen Wohnsitz anmelden."
+            })
+
         adresse_id = request.POST.get("adresse_id")
         buerger_id = request.POST.get("buerger_id")
 
@@ -338,6 +369,7 @@ def buerger_services(request):
             if neue_adresse["adresse_id"] == adresse_id:
                 bestehende_adresse = neue_adresse
                 break
+
 
         daten_personen = lade_personenstandsregister()
         person = None
@@ -367,6 +399,7 @@ def buerger_services(request):
         wohnsitz_daten = lade_wohnsitzregister()
         wohnsitz_daten.append(neuer_eintrag)
         speichere_wohnsitzregister(wohnsitz_daten)
+
 
         datum_heute = date.today().strftime("%d.%m.%Y")
 
@@ -403,9 +436,18 @@ def buerger_services(request):
 
     #Formular Hochzeit
     elif vorgang == "standesamt":
-        b_id_1 = request.POST.get("b_id_1") 
-        b_id_2 = request.POST.get("b_id_2")  
+
+        if role != "mitarbeiter" or request.session.get("mitarbeiter_rolle") != "standesamt":
+            return render(request, "einwohnermeldeamt/buerger_services.html", {
+                "adressen": adressen,
+                "error": "Keine Berechtigung für Standesamt."
+            })
+
+
+        b_id_1 = request.POST.get("b_id_1")
+        b_id_2 = request.POST.get("b_id_2")
         eheschliessungsdatum = request.POST.get("eheschliessungsdatum")
+
 
         daten_personen = lade_personenstandsregister()
 
@@ -724,6 +766,48 @@ def erstelle_buerger_passwort():                            # Anleitung: https:/
 
 
 
+#Hier zwei Funktion zum Aktivieren und Deaktivieren des Mitarbeiter_Modus
+
+@csrf_exempt
+def mitarbeiter_enable(request):
+    if not request.session.get("user_id"):
+        return redirect("login")
+
+    if request.method != "POST":
+        return redirect("buerger_services")
+
+    buerger_id = request.session["user_id"]
+    pin = request.POST.get("pin", "")
+
+    m = pruefe_mitarbeiter_pin(buerger_id, pin)
+    if not m:
+        request.session["error"] = "PIN ungültig oder keine Mitarbeiter-Berechtigung."
+        return redirect("buerger_services")
+
+    request.session["role"] = "mitarbeiter"
+    request.session["mitarbeiter_rolle"] = m.get("rolle")
+
+    return redirect("buerger_services")
+
+
+
+def mitarbeiter_disable(request):
+    if not request.session.get("user_id"):
+        return redirect("login")
+
+    request.session["role"] = "buerger"
+    request.session.pop("mitarbeiter_rolle", None)
+    return redirect("buerger_services")
+
+
+
+
+
+
+
+
+
+
 
 
 #Session-ID JWT
@@ -756,7 +840,7 @@ def weiterleiten_steuern_bank(request):
     return redirect(redirect_url)    
 
 
-TARGET_URL_RECHT_ORDNUNG = "http://[2001:7c0:2320:2:f816:3eff:fe79:999d]" #Zieladresse von Ressort "Recht & Ordnung
+TARGET_URL_RECHT_ORDNUNG = "http://[2001:7c0:2320:2:f816:3eff:fe79:999d]" #Zieladresse von Ressort "Recht & Ordnung, Port 80
 
 def weiterleiten_recht_ordnung(request):
     buerger_id = request.session.get("user_id")
@@ -764,7 +848,7 @@ def weiterleiten_recht_ordnung(request):
         return HttpResponse("Nicht eingeloggt!", status=401)
 
     token = create_jwt(buerger_id)
-    redirect_url = f"{TARGET_URL_RECHT_ORDNUNG}/ro/login?token={quote(token)}"
+    redirect_url = f"{TARGET_URL_RECHT_ORDNUNG}/ro/jwt-login?token={quote(token)}"
     return redirect(redirect_url) 
 
 ##Session-ID erzeugen
@@ -787,10 +871,12 @@ def jwt_login(request):
     # Session auf Server B setzen
     request.session["user_id"] = buerger_id
     setze_session_namen(request, buerger_id) #diese Zeile haben wir neu gesetzt
+    request.session["role"] = "buerger"             #neu gesetzt für unsere rollen in Ressort Meldewesen
+    request.session.pop("mitarbeiter_rolle", None)  #neu gesetzt für unsere rollen in Ressort Meldewesen
+
 
     # Weiter ins Dashboard
     return redirect("mainpage") #hier anpassen, weiterleiten auf die Zielseite
-
 
 
 
