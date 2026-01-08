@@ -1,102 +1,107 @@
 {% load static %}
 <html lang="de">
-    <head>
-        <meta charset="UTF-8">
-        <link rel="stylesheet" href="{% static 'styletest.css' %}">
-        <title>Bürgerservices</title>
-        <style>
-            #wohnsitz-section {
-                display: none;
-            }
-            #standesamt-section {
-                display: none;
-            }
-        </style>
-    </head>
-    <body>
-        {% include "topbar.html" %}
-        {% include "navbar.html" %}
 
-        <h1>Bürgerservices</h1>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{% static 'styletest.css' %}">
+    <title>Bürgerservices</title>
+    <style>
+        #wohnsitz-section {
+            display: none;
+        }
 
-        <form method="POST" action="{% url 'buerger_services' %}">                <!-- Korrelation zur views.py Funktion "Wohnsitz anmelden" -->    
-            {% csrf_token %}
-            <label for="Formulare_Meldeamt">Formulare Meldeamt</label>
-            <select id="Formulare_Meldeamt" name="Formulare_Meldeamt">
-                <option value="">Formular auswählen</option>
-                <option value="wohnsitz">Wohnsitz anmelden</option>
-                <option value="standesamt">Standesamt</option>
+        #standesamt-section {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    {% include "einwohnermeldeamt/topbar.html" %}
+    {% include "einwohnermeldeamt/navbar.html" %}
+
+    <h1>Bürgerservices</h1>
+
+    <form method="POST" action="{% url 'buerger_services' %}">
+        <!-- Korrelation zur views.py Funktion "Wohnsitz anmelden" -->
+        {% csrf_token %}
+        <label for="Formulare_Meldeamt">Formulare Meldeamt</label>
+        <select id="Formulare_Meldeamt" name="Formulare_Meldeamt">
+            <option value="">Formular auswählen</option>
+            <option value="wohnsitz">Wohnsitz anmelden</option>
+            <option value="standesamt">Standesamt</option>
+        </select>
+
+        <fieldset id="wohnsitz-section">
+            <legend>Wohnsitz anmelden</legend>
+
+            <label for="buerger_id">Bürger-ID:</label> <!-- später prüfen durch public key -->
+            <input type="text" id="buerger_id" name="buerger_id" required><br>
+
+            <label for="adresse_id">Straße und Hausnummer:</label>
+            <select id="adresse_id" name="adresse_id" required>
+                <option value="">Adresse auswählen</option>
+                {% for adr in adressen %}
+                <option value="{{ adr.id }}">{{ adr.label }}</option>
+                {% endfor %}
             </select>
 
-            <fieldset id="wohnsitz-section">
-                <legend>Wohnsitz anmelden</legend>
+            <button type="submit">Eingabe</button>
+        </fieldset>
 
-                <label for="buerger_id">Bürger-ID:</label>                          <!-- später prüfen durch public key -->    
-                <input type="text" id="buerger_id" name="buerger_id" required><br>           
+        <fieldset id="standesamt-section">
+            <legend>Standesamt</legend>
 
-                <label for="adresse_id">Straße und Hausnummer:</label>
-                <select id="adresse_id" name="adresse_id" required>
-                    <option value="">Adresse auswählen</option>
-                    {% for adr in adressen %}
-                        <option value="{{ adr.id }}">{{ adr.label }}</option>
-                    {% endfor %}
-                </select>
+            <label for="namensaenderung_b_id1">Bürger-ID (Person, bei der der Nachname nicht geändert wird)</label>
+            <input type="text" id="namensaenderung_b_id1" name="b_id_1" required><br>
 
-                <button type="submit">Eingabe</button>
-            </fieldset>
+            <label for="namensaenderung_b_id2">Bürger-ID (Person, bei der der Nachname geändert wird)</label>
+            <input type="text" id="namensaenderung_b_id2" name="b_id_2" required><br>
 
-            <fieldset id="standesamt-section">
-                <legend>Standesamt</legend>
+            <label for="eheschliessungsdatum">Eheschließungsdatum:</label>
+            <input type="date" id="eheschliessungsdatum" name="eheschliessungsdatum" required><br>
 
-                <label for="namensaenderung_b_id1">Bürger-ID (Person, bei der der Nachname nicht geändert wird)</label>
-                <input type="text" id="namensaenderung_b_id1" name="b_id_1" required><br>
+            <button type="submit">Eingabe</button>
+        </fieldset>
+    </form>
 
-                <label for="namensaenderung_b_id2">Bürger-ID (Person, bei der der Nachname geändert wird)</label>
-                <input type="text" id="namensaenderung_b_id2" name="b_id_2" required><br>
+    <script>
+        // Wir holen uns das Auswahlfeld und beide Abschnitte
+        const vorgangSelect = document.getElementById("Formulare_Meldeamt");
+        const wohnsitzSection = document.getElementById("wohnsitz-section");
+        const standesamtSection = document.getElementById("standesamt-section");
 
-                <label for="eheschliessungsdatum">Eheschließungsdatum:</label>
-                <input type="date" id="eheschliessungsdatum" name="eheschliessungsdatum" required><br>
+        const buergerIdInput = document.getElementById("buerger_id");
+        const adresseSelect = document.getElementById("adresse_id");
 
-                <button type="submit">Eingabe</button>
-            </fieldset>
-        </form>
+        // Wenn sich die Auswahl ändert, wird diese Funktion ausgeführt
+        vorgangSelect.addEventListener("change", function () {
+            const auswahl = vorgangSelect.value;
 
-        <script>
-            // Wir holen uns das Auswahlfeld und beide Abschnitte
-            const vorgangSelect = document.getElementById("Formulare_Meldeamt");
-            const wohnsitzSection = document.getElementById("wohnsitz-section");
-            const standesamtSection = document.getElementById("standesamt-section");
+            // Alles zuerst ausblenden
+            wohnsitzSection.style.display = "none";
+            standesamtSection.style.display = "none";
 
-            const buergerIdInput = document.getElementById("buerger_id");
-            const adresseSelect  = document.getElementById("adresse_id");
+            // required-Flags zurücksetzen
+            buergerIdInput.required = false;
+            adresseSelect.required = false;
 
-            // Wenn sich die Auswahl ändert, wird diese Funktion ausgeführt
-            vorgangSelect.addEventListener("change", function() {
-                const auswahl = vorgangSelect.value;
-                    
-                // Alles zuerst ausblenden
-                wohnsitzSection.style.display = "none";
-                standesamtSection.style.display = "none";
-
-                // required-Flags zurücksetzen
-                buergerIdInput.required = false;
-                adresseSelect.required  = false;
-
-                // Je nach Auswahl das richtige anzeigen
-                if (auswahl === "wohnsitz") {
-                    wohnsitzSection.style.display = "block";
-                    buergerIdInput.required = true;
-                    adresseSelect.required  = true;
-                } else if (auswahl === "standesamt") {
-                    standesamtSection.style.display = "block";
-            // falls du hier Felder als required willst, kannst du das auch setzen
-                }
-            });
-        </script>
-        <script>
-            function hideNavbar() {
-                document.querySelector(".navbar").classList.add("hidden");
+            // Je nach Auswahl das richtige anzeigen
+            if (auswahl === "wohnsitz") {
+                wohnsitzSection.style.display = "block";
+                buergerIdInput.required = true;
+                adresseSelect.required = true;
+            } else if (auswahl === "standesamt") {
+                standesamtSection.style.display = "block";
+                // falls du hier Felder als required willst, kannst du das auch setzen
             }
-        </script>
-    </body>
+        });
+    </script>
+    <script>
+        function hideNavbar() {
+            document.querySelector(".navbar").classList.add("hidden");
+        }
+    </script>
+</body>
+
 </html>

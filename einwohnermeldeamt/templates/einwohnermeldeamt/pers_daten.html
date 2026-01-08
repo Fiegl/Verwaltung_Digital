@@ -1,43 +1,50 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
-    <meta charset="UTF-8">
-    <title>Persönliche Daten</title>
-    <link rel="stylesheet" href="{% static 'styletest.css' %}">
+  <meta charset="UTF-8">
+  <title>Persönliche Daten</title>
+  <link rel="stylesheet" href="{% static 'styletest.css' %}">
 </head>
+
 <body>
-  {% include "topbar.html" %}
-  {% include "navbar.html" %}
+  {% include "einwohnermeldeamt/topbar.html" %}
+  {% include "einwohnermeldeamt/navbar.html" %}
 
-<h1>Persönliche Daten</h1>
+  <h1>Persönliche Daten</h1>
 
-<div class="card">
-  <p><strong>Bürger-ID:</strong> {{ buerger_id }}</p>
-  <p><strong>Vorname:</strong> {{ vorname }}</p>
-  <p><strong>Nachname (Geburt):</strong> {{ nachname_geburt }}</p>
+  <div class="card">
+    <p><strong>Bürger-ID:</strong> {{ buerger_id }}</p>
+    <p><strong>Vorname:</strong> {{ vorname }}</p>
+    <p><strong>Nachname (Geburt):</strong> {{ nachname_geburt }}</p>
 
-  {% if nachname_neu %}
+    {% if nachname_neu %}
     <p><strong>Nachname (neu):</strong> {{ nachname_neu }}</p>
-  {% endif %}
+    {% endif %}
 
-  <p><strong>Geburtsdatum:</strong> {{ geburtsdatum }}</p>
-</div>
+    <p><strong>Geburtsdatum:</strong> {{ geburtsdatum }}</p>
+  </div>
 
-<div class="card">
-  <div class="header"><h2>Wohnsitz</h2></div>
+  <div class="card">
+    <div class="header">
+      <h2>Wohnsitz</h2>
+    </div>
 
-  {% if wohnsitz %}
+    {% if wohnsitz %}
     <p>{{ wohnsitz.straße_hausnummer }}</p>
     <p>{{ wohnsitz.plz_ort }}</p>
     <p>{{ wohnsitz.land }}</p>
-  {% else %}
+    {% else %}
     <p><span class="warning bold">Kein Wohnsitz hinterlegt.</span></p>
-  {% endif %}
-</div>
+    {% endif %}
+  </div>
 
-<a class="button" href="{% url 'buerger_services' %}"><p>← Zurück zu Bürgerservices</p></a>
+  <a class="button" href="{% url 'buerger_services' %}">
+    <p>← Zurück zu Bürgerservices</p>
+  </a>
 
 
 </body>
+
 </html>

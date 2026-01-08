@@ -1,19 +1,21 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
-    <meta charset="UTF-8">
-    <title>Dokumente</title>
-    <link rel="stylesheet" href="{% static 'styletest.css' %}">
+  <meta charset="UTF-8">
+  <title>Dokumente</title>
+  <link rel="stylesheet" href="{% static 'styletest.css' %}">
 </head>
+
 <body>
-  {% include "topbar.html" %}
-  {% include "navbar.html" %}
+  {% include "einwohnermeldeamt/topbar.html" %}
+  {% include "einwohnermeldeamt/navbar.html" %}
 
-<h1>Meine Dokumente</h1>
+  <h1>Meine Dokumente</h1>
 
-<div class="card">
-  {% if docs %}
+  <div class="card">
+    {% if docs %}
     <div class="table_container">
       <table>
         <thead>
@@ -25,22 +27,25 @@
         </thead>
         <tbody>
           {% for d in docs %}
-            <tr>
-              <td>{{ d.typ }}</td>
-              <td>{{ d.created_at }}</td>
-              <td>
-                <a class="button" href="{% url 'download_dokument' d.doc_id %}"><p>Download</p></a>
-              </td>
-            </tr>
+          <tr>
+            <td>{{ d.typ }}</td>
+            <td>{{ d.created_at }}</td>
+            <td>
+              <a class="button" href="{% url 'download_dokument' d.doc_id %}">
+                <p>Download</p>
+              </a>
+            </td>
+          </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
-  {% else %}
+    {% else %}
     <p>Keine Dokumente vorhanden.</p>
-  {% endif %}
-</div>
+    {% endif %}
+  </div>
 
 
 </body>
+
 </html>
