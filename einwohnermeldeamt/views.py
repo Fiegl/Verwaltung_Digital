@@ -1,7 +1,7 @@
 import uuid
 import json
 import os
-import datetime
+import datetime as dt
 import requests
 from datetime import date
 from django.shortcuts import render, redirect
@@ -537,9 +537,21 @@ def dokumente(request):
         return redirect("login")
 
     buerger_id = request.session.get("user_id")
+
     docs = lade_dokumentenregister()
     docs = [d for d in docs if d.get("buerger_id") == buerger_id]
-    docs = sorted(docs, key=lambda x: x.get("created_at", ""), reverse=True)
+
+    for d in docs:
+        ca = d.get("created_at")
+        if isinstance(ca, str) and ca:
+            try:
+                d["created_at_dt"] = dt.datetime.fromisoformat(ca)
+            except ValueError:
+                d["created_at_dt"] = None
+        else:
+            d["created_at_dt"] = None
+
+    docs.sort(key=lambda x: x.get("created_at_dt") or dt.datetime.min, reverse=True)
 
     return render(request, "einwohnermeldeamt/dokumente.html", {"docs": docs})
 
@@ -585,6 +597,9 @@ def personenstandsregister_api(request):
                     
             if not vater_person or not mutter_person:
                 return JsonResponse({"error": "eltern nicht gefunden", "vater_gefunden": bool(vater_person), "mutter_gefunden": bool(mutter_person)}, status=400)
+            #if not vater_person or not mutter_person:
+                #return HttpResponse("parents_not_found", status=400, content_type="text/plain")
+
         
         neue_buerger_id = str(uuid.uuid4())
         
@@ -909,7 +924,6 @@ def jwt_login(request):
 
     # Weiter ins Dashboard
     return redirect("mainpage") #hier anpassen, weiterleiten auf die Zielseite
-
 
 
 
