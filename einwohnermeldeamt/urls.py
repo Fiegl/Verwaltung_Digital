@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path("personenstandsregister_api", views.personenstandsregister_api, name="personenstandsregister_api"), #Slash bei API's weglassen
+    path("personenstandsregister_api/", views.personenstandsregister_api),
     path("buerger_services/", views.buerger_services, name="buerger_services"),
     path("mainpage", views.mainpage, name="mainpage"),
     path('test/', views.test, name='test'),
@@ -38,6 +39,10 @@ urlpatterns = [
     
     path("einwohnermeldeamt/mitarbeiter/enable/", views.mitarbeiter_enable, name="mitarbeiter_enable"),
     path("einwohnermeldeamt/mitarbeiter/disable/", views.mitarbeiter_disable, name="mitarbeiter_disable"),
+    
+    
+    path("signaturen/verify/<str:urkunden_id>/", views.verify_heiratsurkunde_signatur, name="verify_heiratsurkunde_signatur"),
+    path("signatur/<str:doc_id>/pruefen", views.signatur_pruefen, name="signatur_pruefen"),
 
 
 

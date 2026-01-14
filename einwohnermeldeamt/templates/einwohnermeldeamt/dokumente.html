@@ -53,6 +53,12 @@
                 <a class="button" href="{% url 'download_dokument' d.doc_id %}">
                   <p>Download</p>
                 </a>
+
+                {% if d.typ == "heiratsurkunde" and d.signatur_datei %}
+                <a class="button" style="margin-top:8px;" href="{% url 'signatur_pruefen' d.doc_id %}" target="_blank">
+                  <p>Signatur prüfen</p>
+                </a>
+                {% endif %}
               </td>
             </tr>
             {% endfor %}

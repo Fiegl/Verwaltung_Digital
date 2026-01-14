@@ -1,3 +1,8 @@
+#  wichtige Befehle für die PowerShell
+##
+##
+##
+
 import uuid
 import json
 import os
@@ -9,13 +14,37 @@ from django.http import HttpResponse, JsonResponse, FileResponse
 from django.views.decorators.csrf import csrf_exempt 
 from django.views.decorators.http import require_GET, require_POST
 from fpdf import FPDF #PDF Modul importieren bezüglich Generierung PFD "Meldebestätigung", ansonsten pandas
+from django.conf import settings
 
 from urllib.parse import quote  #für Session ID
 from .jwt_tooling import create_jwt, decode_jwt  #wichtig damit es funktioniert (Session-ID)
+from django.utils import timezone
+
+from io import BytesIO #pip isnstall pyhanko + pip install pyhanko pyhanko-certvalidator cryptography
+from pyhanko.pdf_utils.incremental_writer import IncrementalPdfFileWriter
+
+
+
+# pyHanko (PDF-Signaturen)
+try:
+    from pyhanko.sign import signers
+    from pyhanko.sign.validation import validate_pdf_signature
+    from pyhanko.pdf_utils.reader import PdfFileReader
+    from pyhanko_certvalidator import ValidationContext
+    from cryptography import x509
+except Exception:
+    # Falls pyHanko (noch) nicht installiert ist, fangen wir das unten sauber ab.
+    signers = None
+    validate_pdf_signature = None
+    PdfFileReader = None
+    ValidationContext = None
+    x509 = None
 
 #Module für das Generieren eines Bürger-Passworts
 import secrets
 import string
+
+
 
 
 
@@ -208,7 +237,8 @@ def dokument_speichern(buerger_id, typ, pdf_bytes, dateiname):
         "buerger_id": buerger_id,
         "typ": typ,
         "dateiname": dateiname,
-        "created_at": datetime.datetime.now().isoformat()
+        "created_at": dt.datetime.now().isoformat()
+
     })
     speichere_dokumentenregister(docs)
     return doc_id
@@ -319,11 +349,178 @@ def api_person_daten(request, buerger_id):
 
 
 
-##Funktion zum Speichern der Einträge durch die Formulare
+def signiere_heiratsurkunde_pdf(
+    *,
+    urkundennummer: str,
+    pdf_bytes: bytes,
+    aussteller_name: str,
+) -> dict:
+    """
+    Signiert eine fertige PDF (bytes) mit Sarah Webers Zertifikat/Private Key.
+    Speichert optional eine Kopie unter /var/www/django-project/signaturen/
+    Gibt Metadaten zurück (signed_bytes, sig_filename, sig_path).
+
+    Rückgabe-Keys:
+      - signed_pdf_bytes: bytes
+      - sig_filename: str
+      - sig_path: str
+    """
+
+    if signers is None:
+        raise RuntimeError(
+            "pyHanko ist nicht verfügbar. Installiere: pip install pyhanko pyhanko-certvalidator cryptography"
+        )
+
+    # Keys als Dateien (nicht im Register!)
+    cert_path = "/var/www/django-project/keys/sarah_cert.pem"
+    key_path  = "/var/www/django-project/keys/sarah_privkey.pem"
+
+    if not os.path.exists(cert_path) or not os.path.exists(key_path):
+        raise FileNotFoundError(
+            "Signatur-Keys fehlen auf dem Server (sarah_cert.pem / sarah_privkey.pem)."
+        )
+
+    # SimpleSigner aus Dateien laden
+    # (kein Passwort angenommen; falls ihr eins habt: passphrase=b"....")
+    signer = signers.SimpleSigner.load(
+        key_file=key_path,
+        cert_file=cert_path,
+        key_passphrase=None,
+    )
+
+    # Signatur-Metadaten
+    meta = signers.PdfSignatureMetadata(
+        field_name="Signature1",  # wird bei Bedarf automatisch angelegt
+        reason=f"Heiratsurkunde elektronisch signiert durch {aussteller_name}",
+        location="Standesamt",
+    )
+
+    pdf_signer = signers.PdfSigner(meta, signer=signer)
+
+    out = BytesIO()
+
+    w = IncrementalPdfFileWriter(BytesIO(pdf_bytes))
+    pdf_signer.sign_pdf(w, output=out)
+
+    signed_pdf_bytes = out.getvalue()
+
+
+
+    # Optional: Kopie zusätzlich in Signaturen-Ordner ablegen (praktisch fürs Debug/Standesamt-Endpoint)
+    out_dir = "/var/www/django-project/signaturen"
+    os.makedirs(out_dir, exist_ok=True)
+
+    sig_filename = f"heiratsurkunde_{urkundennummer}.signed.pdf"
+    sig_path = os.path.join(out_dir, sig_filename)
+    with open(sig_path, "wb") as f:
+        f.write(signed_pdf_bytes)
+
+    return {
+        "signed_pdf_bytes": signed_pdf_bytes,
+        "sig_filename": sig_filename,
+        "sig_path": sig_path,
+    }
+
+
+def verify_pdf_signatur_bytes(
+    *,
+    pdf_bytes: bytes,
+    trust_cert_pem_path: str = "/var/www/django-project/keys/sarah_cert.pem",
+) -> dict:
+    """
+    Verifiziert (einfach) die eingebettete PDF-Signatur.
+    Rückgabe dict für JSON:
+      - ok: bool
+      - message: str
+      - detail: str (optional)
+    """
+
+    if validate_pdf_signature is None or PdfFileReader is None or ValidationContext is None or x509 is None:
+        return {
+            "ok": False,
+            "message": "PDF-Signaturprüfung nicht verfügbar (pyHanko fehlt).",
+        }
+
+    if not os.path.exists(trust_cert_pem_path):
+        return {"ok": False, "message": "Zertifikat fehlt (sarah_cert.pem)."}
+
+    with open(trust_cert_pem_path, "rb") as f:
+        cert_bytes = f.read()
+
+    try:
+        trust_cert = x509.load_pem_x509_certificate(cert_bytes)
+        vc = ValidationContext(trust_roots=[trust_cert])
+
+        reader = PdfFileReader(BytesIO(pdf_bytes))
+        embedded = list(reader.embedded_signatures)
+
+        if not embedded:
+            return {"ok": False, "message": "Keine eingebettete Signatur in der PDF gefunden."}
+
+        # Wenn mehrere Signaturen drin sind, nehmen wir die letzte (meist die „aktuellste“)
+        sig = embedded[-1]
+
+        status = validate_pdf_signature(sig, vc)
+
+        # bottom_line == True bedeutet im Wesentlichen: kryptografisch OK + chain OK (im Rahmen VC)
+        if getattr(status, "bottom_line", False):
+            return {"ok": True, "message": "Signatur gültig."}
+
+        # Falls nicht OK, versuchen wir Details lesbar zu machen
+        summ = getattr(status, "summary", None)
+        return {
+            "ok": False,
+            "message": "Signatur ungültig oder nicht vertrauenswürdig.",
+            "detail": str(summ) if summ else "Validation fehlgeschlagen.",
+        }
+
+    except Exception as e:
+        return {"ok": False, "message": "Signaturprüfung fehlgeschlagen.", "detail": str(e)}
+
+
+# ---------------------------------------------------------------------------
+# Hier zwei Hilfs-Funktionen für das Einbinden von CSS bei der Erstellung der PDF-Dokumente (fpdf)
+# (unverändert lassen – Templates/Layout bleiben gleich)
+# ---------------------------------------------------------------------------
+
+def pdf_base(pdf, titel, logo_path=None):
+    pdf.add_page()
+
+    # Rahmen
+    pdf.set_draw_color(0, 102, 204)
+    pdf.set_line_width(2)
+    pdf.rect(5, 5, 200, 287)
+
+    # Logo
+    if logo_path and os.path.exists(logo_path):
+        pdf.image(logo_path, x=165, y=10, w=30)
+
+    pdf.ln(25)
+    pdf.set_font("Helvetica", "B", 18)
+    pdf.set_text_color(0, 0, 0)
+    pdf.cell(0, 12, titel, ln=True, align="C")
+    pdf.ln(8)
+
+
+def pdf_meta_block(pdf, lines):
+    pdf.set_draw_color(180, 180, 180)
+    pdf.line(20, pdf.get_y(), 190, pdf.get_y())
+    pdf.ln(6)
+
+    pdf.set_text_color(100, 100, 100)
+    pdf.set_font("Helvetica", "", 10)
+    for line in lines:
+        pdf.cell(0, 6, line, ln=True)
+
+
+# ---------------------------------------------------------------------------
+# Funktion zum Speichern der Einträge durch die Formulare
+# (nur Standesamt-Teil relevant umgebaut -> PDF signieren statt XML)
+# ---------------------------------------------------------------------------
 
 @csrf_exempt
 def buerger_services(request):
-    
+
     if not request.session.get("user_id"):
         return redirect("login")
 
@@ -334,12 +531,9 @@ def buerger_services(request):
     adressen = []
     for neue_adresse in liste_adressen:
         label = f'{neue_adresse["straße_hausnummer"]}, {neue_adresse["plz_ort"]}'
-        adressen.append({
-            "id": neue_adresse["adresse_id"],
-            "label": label
-        })
+        adressen.append({"id": neue_adresse["adresse_id"], "label": label})
 
-    #Ab hier laden wir die entsprechenden Formulare
+    # Ab hier laden wir die entsprechenden Formulare
     if request.method != "POST":
         error = request.session.pop("error", None)
         return render(request, "einwohnermeldeamt/buerger_services.html", {
@@ -347,12 +541,12 @@ def buerger_services(request):
             "error": error
         })
 
-
     vorgang = request.POST.get("Formulare_Meldeamt")
     role = request.session.get("role", "buerger")
 
-
-    # Formular Wohnsitz anmelden
+    # -----------------------------------------------------------------------
+    # Formular Wohnsitz anmelden (unverändert)
+    # -----------------------------------------------------------------------
     if vorgang == "wohnsitz":
 
         if role != "buerger":
@@ -369,7 +563,6 @@ def buerger_services(request):
             if neue_adresse["adresse_id"] == adresse_id:
                 bestehende_adresse = neue_adresse
                 break
-
 
         daten_personen = lade_personenstandsregister()
         person = None
@@ -392,49 +585,59 @@ def buerger_services(request):
             "plz_ort": bestehende_adresse["plz_ort"],
             "land": bestehende_adresse["land"],
         }
-        
+
         person["adresse"] = adresse_id
         speichere_personenstandsregister(daten_personen)
-        
+
         wohnsitz_daten = lade_wohnsitzregister()
         wohnsitz_daten.append(neuer_eintrag)
         speichere_wohnsitzregister(wohnsitz_daten)
 
-
         datum_heute = date.today().strftime("%d.%m.%Y")
 
-        #ab hier erzeugen wir mit dem Modul fPDF die jeweilige PDF für den Bürger, Anleitung: https://py-pdf.github.io/fpdf2/Tutorial-de.html#pdfa-standards
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_font("helvetica", style="B", size=16)
-        pdf.cell(0, 10, "Meldebestätigung", ln=True, align="C")
-        pdf.ln(10)
+        # ab hier erzeugen wir mit dem Modul fPDF die jeweilige PDF für den Bürger
+        logo_path = os.path.join(settings.BASE_DIR, "static", "Logo.png")
 
-        pdf.set_font("helvetica", size=12)
-        textzeilen = [
-            "Hiermit wird bestätigt, dass",
-            f"{person.get('vorname', '')} {person.get('nachname_geburt', '')}",
-            f"am {datum_heute} seinen Wohnsitz an folgender Adresse angemeldet hat:",
-            "",
-            bestehende_adresse['straße_hausnummer'].replace('_', ' '),
-            bestehende_adresse['plz_ort'].replace('_', ' '),
-            bestehende_adresse['land'],
-            "",
+        pdf = FPDF()
+        pdf_base(pdf, "Meldebestätigung", logo_path=logo_path)
+
+        pdf.set_font("Helvetica", "", 12)
+        pdf.cell(0, 8, "Hiermit wird bestätigt, dass", ln=True)
+        pdf.ln(2)
+
+        pdf.set_font("Helvetica", "B", 13)
+        pdf.cell(0, 8, f"{person.get('vorname','')} {person.get('nachname_geburt','')}", ln=True)
+        pdf.ln(2)
+
+        pdf.set_font("Helvetica", "", 12)
+        pdf.multi_cell(0, 8, f"am {datum_heute} seinen Wohnsitz an folgender Adresse angemeldet hat:")
+        pdf.ln(4)
+
+        pdf.set_x(25)
+        pdf.multi_cell(
+            0, 8,
+            f"{bestehende_adresse['straße_hausnummer'].replace('_',' ')}\n"
+            f"{bestehende_adresse['plz_ort'].replace('_',' ')}\n"
+            f"{bestehende_adresse['land']}"
+        )
+        pdf.set_x(10)
+        pdf.ln(6)
+
+        pdf_meta_block(pdf, [
             f"Bürger-ID: {buerger_id}",
             f"Meldungsvorgang-ID: {neuer_eintrag['meldungsvorgang_id']}",
-        ]
+        ])
 
-        for zeile in textzeilen:
-            pdf.cell(0, 8, zeile, ln=True)
-
-        pdf_meldebestätigung = pdf.output(dest="S").encode("latin-1")
-        dateiname = f"meldebestaetigung_{date.today().isoformat()}_{neuer_eintrag['meldungsvorgang_id']}.pdf" 
-        dokument_speichern(buerger_id, "meldebestaetigung", pdf_meldebestätigung, dateiname)
-        response = HttpResponse(pdf_meldebestätigung, content_type="application/pdf")
+        pdf_meldebestaetigung = pdf.output(dest="S").encode("latin-1")
+        dateiname = f"meldebestaetigung_{date.today().isoformat()}_{neuer_eintrag['meldungsvorgang_id']}.pdf"
+        dokument_speichern(buerger_id, "meldebestaetigung", pdf_meldebestaetigung, dateiname)
+        response = HttpResponse(pdf_meldebestaetigung, content_type="application/pdf")
         response["Content-Disposition"] = 'inline; filename="meldebestaetigung.pdf"'
         return response
 
-    #Formular Hochzeit
+    # -----------------------------------------------------------------------
+    # Formular Hochzeit (UMGEBAUT: PDF signieren statt XML signieren)
+    # -----------------------------------------------------------------------
     elif vorgang == "standesamt":
 
         if role != "mitarbeiter" or request.session.get("mitarbeiter_rolle") != "standesamt":
@@ -443,11 +646,9 @@ def buerger_services(request):
                 "error": "Keine Berechtigung für Standesamt."
             })
 
-
         b_id_1 = request.POST.get("b_id_1")
         b_id_2 = request.POST.get("b_id_2")
         eheschliessungsdatum = request.POST.get("eheschliessungsdatum")
-
 
         daten_personen = lade_personenstandsregister()
 
@@ -489,46 +690,198 @@ def buerger_services(request):
             # Falls irgendwas schiefgeht, einfach Originalstring lassen
             pass
 
-        #ab hier erzeugen wir als PFD die Heiratsurkunde                #XHTML benutzen statt fPDF
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_font("helvetica", style="B", size=16)
-        pdf.cell(0, 10, "Heiratsurkunde", ln=True, align="C")
-        pdf.ln(10)
-
-        pdf.set_font("helvetica", size=12)
-
-        name1 = f"{person1.get('vorname', '')} {person1.get('nachname_geburt', '')}"
-        name2_geburtsname = f"{person2.get('vorname', '')} {person2.get('nachname_geburt', '')}"
-        name2_neu = f"{person2.get('vorname', '')} {neuerNachname}"
-
         urkundennummer = str(uuid.uuid4())
+        name1 = f"{person1.get('vorname','')} {person1.get('nachname_geburt','')}"
+        name2_geburtsname = f"{person2.get('vorname','')} {person2.get('nachname_geburt','')}"
 
-        textzeilen = [
-            f"Urkundennummer: {urkundennummer}",
-            "",
-            f"Am {datum_ehe} wurde die Ehe geschlossen zwischen",
-            f"{name1}",
-            "und",
-            f"{name2_geburtsname}.",
-            "",
-            f"Die Person mit der Bürger-ID {b_id_2} führt ab Eheschließung den Familiennamen:",
-            f"{neuerNachname}",
-            "",
+        # Aussteller (Mitarbeiter Standesamt) ermitteln
+        aussteller_id = request.session.get("user_id")
+
+        aussteller_person = None
+        for p in daten_personen:
+            if p.get("buerger_id") == aussteller_id:
+                aussteller_person = p
+                break
+
+        if aussteller_person:
+            aussteller_name = f"{aussteller_person.get('vorname','')} {aussteller_person.get('nachname_geburt','')}".strip()
+        else:
+            aussteller_name = "Unbekannt"
+
+        # -------------------------------------------------------------------
+        # 1) PDF erzeugen (wie gehabt)
+        # -------------------------------------------------------------------
+        logo_path = os.path.join(settings.BASE_DIR, "static", "Logo.png")
+
+        pdf = FPDF()
+        pdf_base(pdf, "Heiratsurkunde", logo_path=logo_path)
+
+        pdf.set_font("Helvetica", "", 12)
+        pdf.cell(0, 8, f"Urkundennummer: {urkundennummer}", ln=True)
+        pdf.ln(2)
+
+        pdf.multi_cell(0, 8, f"Am {datum_ehe} wurde die Ehe geschlossen zwischen")
+        pdf.set_font("Helvetica", "B", 12)
+        pdf.cell(0, 8, name1, ln=True)
+        pdf.set_font("Helvetica", "", 12)
+        pdf.cell(0, 8, "und", ln=True)
+        pdf.set_font("Helvetica", "B", 12)
+        pdf.cell(0, 8, name2_geburtsname, ln=True)
+        pdf.ln(4)
+
+        pdf.set_font("Helvetica", "", 12)
+        pdf.multi_cell(0, 8, f"Die Person mit der Buerger-ID {b_id_2} fuehrt ab Eheschliessung den Familiennamen:")
+        pdf.set_font("Helvetica", "B", 12)
+        pdf.cell(0, 8, neuerNachname, ln=True)
+        pdf.ln(6)
+
+        # Hinweis: Template soll weiter funktionieren -> wir behalten „signatur_datei“ als Feld im Register
+        # (aber es ist jetzt eine signierte PDF, keine XML)
+        sig_filename_preview = f"heiratsurkunde_{urkundennummer}.signed.pdf"
+
+        pdf_meta_block(pdf, [
             f"Eintrag im Personenstandsregister vom {datum_heute}.",
-        ]
+            f"Ausgestellt von: {aussteller_name} (Standesamt)",
+            f"E-Signatur: eingebettet in PDF ({sig_filename_preview})",
+        ])
 
-        for zeile in textzeilen:
-            pdf.cell(0, 8, zeile, ln=True)
+        # >>> sichtbarer Signatur-Text GANZ UNTEN (optional, rein informativ)
+        pdf.set_text_color(80, 80, 80)
+        pdf.set_font("Helvetica", "", 9)
+        pdf.ln(14)
+        pdf.multi_cell(0, 5, f"Elektronisch signiert durch {aussteller_name}. Signatur-ID: {urkundennummer}")
 
-        pdf_hochzeit = pdf.output(dest="S").encode("latin-1")
+        pdf_hochzeit_unsigned = pdf.output(dest="S").encode("latin-1")
+
+        # -------------------------------------------------------------------
+        # 2) PDF signieren (NEU)
+        # -------------------------------------------------------------------
+        try:
+            sign_info = signiere_heiratsurkunde_pdf(
+                urkundennummer=urkundennummer,
+                pdf_bytes=pdf_hochzeit_unsigned,
+                aussteller_name=aussteller_name,
+            )
+        except Exception as e:
+            return render(request, "einwohnermeldeamt/buerger_services.html", {
+                "adressen": adressen,
+                "error": f"PDF-Signatur fehlgeschlagen: {str(e)}"
+            })
+
+        pdf_hochzeit_signed = sign_info["signed_pdf_bytes"]
+        sig_filename = sign_info["sig_filename"]
+
+        # -------------------------------------------------------------------
+        # 3) Signierte PDF speichern (Bürger bekommt signierte PDF)
+        # -------------------------------------------------------------------
         dateiname = f"heiratsurkunde_{date.today().isoformat()}_{urkundennummer}.pdf"
-        dokument_speichern(b_id_1, "heiratsurkunde", pdf_hochzeit, dateiname)
-        dokument_speichern(b_id_2, "heiratsurkunde", pdf_hochzeit, dateiname)
 
-        response = HttpResponse(pdf_hochzeit, content_type="application/pdf")
-        response["Content-Disposition"] = 'inline; filename="heiratsurkunde.pdf\"'
+        doc_id_1 = dokument_speichern(b_id_1, "heiratsurkunde", pdf_hochzeit_signed, dateiname)
+        doc_id_2 = dokument_speichern(b_id_2, "heiratsurkunde", pdf_hochzeit_signed, dateiname)
+
+        # >>> Signatur-Info im Dokumentenregister vermerken (Template-Button bleibt damit sichtbar)
+        docs = lade_dokumentenregister()
+        for d in docs:
+            if d.get("doc_id") in (doc_id_1, doc_id_2):
+                # Feldname bleibt gleich -> dokumente.html muss nicht zwingend angepasst werden
+                d["signatur_datei"] = sig_filename  # jetzt: *.signed.pdf (Kopie im Signaturen-Ordner)
+                d["signatur_typ"] = "pdf"
+        speichere_dokumentenregister(docs)
+
+        response = HttpResponse(pdf_hochzeit_signed, content_type="application/pdf")
+        response["Content-Disposition"] = 'inline; filename="heiratsurkunde.pdf"'
         return response
+
+    return HttpResponse("method_not_allowed", status=405, content_type="text/plain")
+
+
+# ---------------------------------------------------------------------------
+# (ALT) verify_heiratsurkunde_signatur per XML -> (NEU) per signierter PDF
+# Wir lassen den Endpoint bestehen, damit URLs/Tests nicht brechen.
+# Erwartet urkunden_id und prüft /var/www/django-project/signaturen/heiratsurkunde_<id>.signed.pdf
+# ---------------------------------------------------------------------------
+
+@require_GET
+def verify_heiratsurkunde_signatur(request, urkunden_id):
+    if not request.session.get("user_id"):
+        return redirect("login")
+
+    # optional: nur Mitarbeiter Standesamt dürfen verifizieren
+    if request.session.get("role") != "mitarbeiter" or request.session.get("mitarbeiter_rolle") != "standesamt":
+        return HttpResponse("Keine Berechtigung", status=403)
+
+    pdf_path = f"/var/www/django-project/signaturen/heiratsurkunde_{urkunden_id}.signed.pdf"
+    if not os.path.exists(pdf_path):
+        return HttpResponse("Signierte PDF nicht gefunden", status=404)
+
+    with open(pdf_path, "rb") as f:
+        pdf_bytes = f.read()
+
+    result = verify_pdf_signatur_bytes(pdf_bytes=pdf_bytes)
+
+    # Für Debug: JSON ausgeben (statt XML)
+    return JsonResponse(result, status=200 if result.get("ok") else 400)
+
+
+# ---------------------------------------------------------------------------
+# Signaturprüfung aus dem Dokumentenbereich (Button in dokumente.html)
+# -> prüft die eingebettete Signatur der PDF-Datei selbst.
+# Templates funktionieren weiter, weil wir signatur_datei weiter setzen.
+# ---------------------------------------------------------------------------
+
+@require_GET
+def signatur_pruefen(request, doc_id):
+    if not request.session.get("user_id"):
+        return redirect("login")
+
+    buerger_id = request.session.get("user_id")
+
+    docs = lade_dokumentenregister()
+    doc = None
+    for d in docs:
+        if d.get("doc_id") == doc_id and d.get("buerger_id") == buerger_id:
+            doc = d
+            break
+
+    if not doc:
+        return JsonResponse({"ok": False, "error": "Dokument nicht gefunden"}, status=404)
+
+    # Template hängt evtl. an signatur_datei -> wir behalten das Feld,
+    # aber für die Prüfung brauchen wir die PDF selbst.
+    if not doc.get("signatur_datei"):
+        return JsonResponse({"ok": False, "error": "Keine Signatur hinterlegt"}, status=400)
+
+    dateiname = doc.get("dateiname")
+    if not dateiname:
+        return JsonResponse({"ok": False, "error": "Dokument hat keinen Dateinamen im Register"}, status=500)
+
+    # DOKU_BASE wird bei euch global definiert (wie in views.py oben)
+    pdf_path = os.path.join(DOKU_BASE, buerger_id, dateiname)
+    if not os.path.exists(pdf_path):
+        return JsonResponse({"ok": False, "error": "PDF-Datei nicht gefunden"}, status=404)
+
+    with open(pdf_path, "rb") as f:
+        pdf_bytes = f.read()
+
+    result = verify_pdf_signatur_bytes(pdf_bytes=pdf_bytes)
+
+    if result.get("ok"):
+        return JsonResponse({
+            "ok": True,
+            "message": result.get("message", "Signatur gueltig"),
+            "signatur_datei": doc.get("signatur_datei"),
+            "signatur_typ": doc.get("signatur_typ", "pdf"),
+        })
+
+    return JsonResponse({
+        "ok": False,
+        "error": result.get("message", "Signatur ungueltig"),
+        "detail": result.get("detail", ""),
+        "signatur_datei": doc.get("signatur_datei"),
+        "signatur_typ": doc.get("signatur_typ", "pdf"),
+    }, status=400)
+
+
     
     
 @require_GET
