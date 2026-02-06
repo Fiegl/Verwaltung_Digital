@@ -50,8 +50,8 @@ import string
 
 # Pfade zu den Registern
 personenstandsregister = "/var/www/django-project/datenbank/personenstandsregister.json"
-wohnsitzregister = "/var/www/django-project/datenbank/wohnsitzregister.json"
-adressenregister = "/var/www/django-project/datenbank/adressenregister.json"
+wohnsitzregister = "/var/www/django-project/datenbank/wohnsitzregister.json"                #Marvin +  JSON
+adressenregister = "/var/www/django-project/datenbank/adressenregister.json"               #Marvin + JSON
 dokumentenregister = "/var/www/django-project/datenbank/dokumentenregister.json"
 mitarbeiterregister = "/var/www/django-project/datenbank/mitarbeiterregister.json"
 DOKU_BASE = "/var/www/django-project/dokumente"
@@ -187,7 +187,7 @@ def speichere_personenstandsregister(daten):
 #Hier eine Hilfs-Funktion, für das Aufrufen und Persistieren von Daten im Adressenregister
 
 
-def lade_adressenregister():
+def lade_adressenregister():                                                            #Marvin
     try:
         with open(adressenregister, "r", encoding="utf-8") as datei:
             return json.load(datei)
@@ -197,14 +197,14 @@ def lade_adressenregister():
 #Hier zwei Hilfs-Funktionen für das Aufrufen und Persistieren von Daten im Wohnsitzregister
 
 
-def lade_wohnsitzregister():
+def lade_wohnsitzregister():                                                            #Marvin
     try:
         with open(wohnsitzregister, "r", encoding="utf-8") as datei:
             return json.load(datei)
     except:
         return []   
     
-def speichere_wohnsitzregister(daten):
+def speichere_wohnsitzregister(daten):                                                  #Marvin
     with open (wohnsitzregister, "w", encoding="utf-8") as datei:
         json.dump(daten, datei, ensure_ascii=False, indent=2)  
 
@@ -518,7 +518,7 @@ def pdf_meta_block(pdf, lines):
 # (nur Standesamt-Teil relevant umgebaut -> PDF signieren statt XML)
 # ---------------------------------------------------------------------------
 
-@csrf_exempt
+@csrf_exempt                                                                        #Marvin
 def buerger_services(request):
 
     if not request.session.get("user_id"):
@@ -595,7 +595,7 @@ def buerger_services(request):
 
         datum_heute = date.today().strftime("%d.%m.%Y")
 
-        # ab hier erzeugen wir mit dem Modul fPDF die jeweilige PDF für den Bürger
+        # ab hier erzeugen wir mit dem Modul fPDF die jeweilige PDF für den Bürger          #mit Stefan zusammen (ab Part Signatur)
         logo_path = os.path.join(settings.BASE_DIR, "static", "Logo.png")
 
         pdf = FPDF()
@@ -755,7 +755,7 @@ def buerger_services(request):
 
         # -------------------------------------------------------------------
         # 2) PDF signieren (NEU)
-        # -------------------------------------------------------------------
+        # -------------------------------------------------------------------                       #Part von Stefan (Signatur)
         try:
             sign_info = signiere_heiratsurkunde_pdf(
                 urkundennummer=urkundennummer,
@@ -1185,7 +1185,7 @@ def mitarbeiter_disable(request):
 
 
 
-#Session-ID JWT
+#Session-ID JWT                                                                                     #in Zusammenarbeit mit Louis 
 
 ##Session-ID versenden
 
